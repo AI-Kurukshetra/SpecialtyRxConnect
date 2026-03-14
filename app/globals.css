@@ -187,9 +187,9 @@
   }
 }
 
-@layer utilities {
-  .app-loader {
-    position: fixed;
+  @layer utilities {
+    .app-loader {
+      position: fixed;
     inset: 0;
     z-index: 60;
     display: flex;
@@ -213,6 +213,10 @@
       transform: rotate(360deg);
     }
   }
+}
+
+#next-logo {
+  display: none !important;
 }
 
 @layer base {
