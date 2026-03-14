@@ -64,6 +64,27 @@ export async function registerAction(
     };
   }
 
+  if (!isValidEmail(email)) {
+    return {
+      status: "error",
+      message: "Enter a valid email address."
+    };
+  }
+
+  if (!isValidOrganizationName(organizationName)) {
+    return {
+      status: "error",
+      message: "Organization name must be between 3 and 80 characters."
+    };
+  }
+
+  if (providerNpi && !isValidNpi(providerNpi)) {
+    return {
+      status: "error",
+      message: "Provider NPI must be a 10-digit number."
+    };
+  }
+
   const serviceClient = createServiceSupabaseClient();
   let createdUserId: string | null = null;
 
@@ -139,4 +160,16 @@ export async function registerAction(
 function readOptionalValue(formData: FormData, key: string) {
   const value = String(formData.get(key) ?? "").trim();
   return value ? value : undefined;
+}
+
+function isValidEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidNpi(value: string) {
+  return /^\d{10}$/.test(value);
+}
+
+function isValidOrganizationName(value: string) {
+  return value.length >= 3 && value.length <= 80;
 }

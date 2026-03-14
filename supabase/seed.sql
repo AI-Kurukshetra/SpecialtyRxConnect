@@ -5,7 +5,7 @@ on conflict (slug) do nothing;
 insert into public.case_managers (organization_id, full_name, email, phone)
 select id, 'Maya Chen', 'maya.chen@northstar.test', '(555) 100-1001'
 from public.organizations
-where slug = 'northstar-specialty-care'if 
+where slug = 'northstar-specialty-care'
 and not exists (
   select 1 from public.case_managers where full_name = 'Maya Chen'
 );
