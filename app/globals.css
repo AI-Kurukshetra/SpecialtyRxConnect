@@ -215,8 +215,11 @@
   }
 }
 
-#next-logo {
+#next-logo,
+#next-logo * {
   display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }
 
 @layer base {
