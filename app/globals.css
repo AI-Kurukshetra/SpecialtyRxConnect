@@ -1,0 +1,80 @@
+@import "../styles/tokens.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-line;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-mist text-ink antialiased;
+    background-image:
+      radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 28%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 1));
+  }
+
+  a {
+    @apply text-inherit no-underline;
+  }
+
+  ::selection {
+    @apply bg-brand text-white;
+  }
+}
+
+@layer components {
+  .page-shell {
+    @apply min-h-screen px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .content-shell {
+    @apply mx-auto flex w-full max-w-7xl flex-col gap-8;
+  }
+
+  .panel {
+    @apply rounded-3xl border border-slate-200/80 bg-white/90 shadow-panel backdrop-blur;
+  }
+
+  .panel-muted {
+    @apply rounded-3xl border border-slate-200/70 bg-slate-50/80;
+  }
+
+  .muted-copy {
+    @apply text-sm leading-7 text-slate-600 sm:text-base;
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.3em] text-slate-500;
+  }
+
+  .surface-border {
+    @apply border border-slate-200/80;
+  }
+
+  .workspace-grid {
+    @apply grid gap-6 lg:grid-cols-[1.4fr_minmax(0,0.9fr)];
+  }
+
+  .metric-grid {
+    @apply grid gap-4 md:grid-cols-2 xl:grid-cols-4;
+  }
+
+  .detail-grid {
+    @apply grid gap-4 md:grid-cols-2;
+  }
+
+  .form-field {
+    @apply flex flex-col gap-2;
+  }
+
+  .section-stack {
+    @apply flex flex-col gap-6;
+  }
+}
