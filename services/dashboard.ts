@@ -1,6 +1,6 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { demoCases, demoDashboard } from "@/services/demo-data";
+import { getCurrentWorkspaceActor } from "@/services/workspace-access";
 import { formatScheduledAt, humanizeSnakeCase } from "@/utils/formatters";
 import { getPriorityLabel, getStatusTone } from "@/utils/status";
 import type { ProviderDashboardData } from "@/types/dashboard";
@@ -10,52 +10,66 @@ export async function getDashboardSnapshot(): Promise<ProviderDashboardData> {
     return demoDashboard;
   }
 
+  let actor: Awaited<ReturnType<typeof getCurrentWorkspaceActor>> = null;
+
   try {
-    const supabase = await createServerSupabaseClient();
-    const db = supabase as any;
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+    actor = await getCurrentWorkspaceActor();
 
-    if (!session?.user) {
+    if (!actor) {
       return demoDashboard;
     }
 
-    const { data: profile } = await db
-      .from("profiles")
-      .select("organization_id")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const isDoctor = actor.role === "provider";
+    if (isDoctor && !actor.provider?.id) {
+      return createEmptyDoctorDashboard();
+    }
 
-    if (!profile?.organization_id) {
+    if (!actor.organizationId) {
       return demoDashboard;
     }
 
-    const organizationId = profile.organization_id;
-    const [caseResult, authResult, faResult, communicationResult] = await Promise.all([
-      db
+    let casesQuery = actor.db
         .from("patient_cases")
         .select(
           "id, status, priority, next_action, patients(first_name,last_name), prescriptions(medications(name)), insurance_policies(payer_name), last_activity_at"
         )
-        .eq("organization_id", organizationId)
+        .eq("organization_id", actor.organizationId)
         .order("last_activity_at", { ascending: false })
-        .limit(6),
-      db
+        .limit(6);
+
+    let authQuery = actor.db
         .from("prior_authorizations")
-        .select("status")
-        .eq("organization_id", organizationId),
-      db
+        .select("status, patient_cases!inner(provider_id)")
+        .eq("organization_id", actor.organizationId);
+
+    let affordabilityQuery = actor.db
         .from("financial_assistance_cases")
-        .select("status")
-        .eq("organization_id", organizationId),
-      db
+        .select("status, patient_cases!inner(provider_id)")
+        .eq("organization_id", actor.organizationId);
+
+    let communicationsQuery = actor.db
         .from("communications")
-        .select("summary, channel, scheduled_for")
-        .eq("organization_id", organizationId)
+        .select("summary, channel, scheduled_for, patient_cases!inner(provider_id)")
+        .eq("organization_id", actor.organizationId)
         .eq("status", "scheduled")
         .order("scheduled_for", { ascending: true })
-        .limit(5)
+        .limit(5);
+
+    if (isDoctor && actor.provider?.id) {
+      casesQuery = casesQuery.eq("provider_id", actor.provider.id);
+      authQuery = authQuery.eq("patient_cases.provider_id", actor.provider.id);
+      affordabilityQuery = affordabilityQuery.eq("patient_cases.provider_id", actor.provider.id);
+      communicationsQuery = communicationsQuery.eq(
+        "patient_cases.provider_id",
+        actor.provider.id
+      );
+    }
+
+    const [caseResult, authResult, faResult, communicationResult] = await Promise.all([
+      casesQuery,
+      authQuery,
+      affordabilityQuery,
+      communicationsQuery
     ]);
 
     if (caseResult.error || authResult.error || faResult.error || communicationResult.error) {
@@ -71,39 +85,47 @@ export async function getDashboardSnapshot(): Promise<ProviderDashboardData> {
       sourceLabel: "Live Supabase data",
       metrics: [
         {
-          label: "Active access cases",
+          label: isDoctor ? "Assigned patients" : "Active access cases",
           value: String(caseRows.length),
-          detail: "Cases currently assigned to your organization work queues.",
+          detail: isDoctor
+            ? "Patients currently assigned to you for clinical review and response."
+            : "Cases currently assigned to your organization work queues.",
           tone: "default"
         },
         {
-          label: "Prior auth in flight",
+          label: isDoctor ? "Prior auth review" : "Prior auth in flight",
           value: String(
             authRows.filter((row: any) =>
               ["submitted", "pending", "appeal"].includes(row.status)
             ).length
           ),
-          detail: "Authorizations waiting on payer action or supporting documentation.",
+          detail: isDoctor
+            ? "Assigned authorizations waiting on supporting documentation or payer action."
+            : "Authorizations waiting on payer action or supporting documentation.",
           tone: "warning"
         },
         {
-          label: "Affordability opportunities",
+          label: isDoctor ? "Access support active" : "Affordability opportunities",
           value: String(
             faRows.filter((row: any) =>
               ["screening", "submitted", "active"].includes(row.status)
             ).length
           ),
-          detail: "Patients with active affordability workflows underway.",
+          detail: isDoctor
+            ? "Assigned patients with active affordability or bridge support workflows."
+            : "Patients with active affordability workflows underway.",
           tone: "accent"
         },
         {
-          label: "Critical blockers",
+          label: isDoctor ? "Urgent follow-up" : "Critical blockers",
           value: String(
             caseRows.filter(
               (row: any) => row.priority === "critical" || row.status === "blocked"
             ).length
           ),
-          detail: "Cases flagged as blocked or critical in the current queue.",
+          detail: isDoctor
+            ? "Assigned cases flagged as blocked or critical for doctor action."
+            : "Cases flagged as blocked or critical in the current queue.",
           tone: "critical"
         }
       ],
@@ -115,27 +137,75 @@ export async function getDashboardSnapshot(): Promise<ProviderDashboardData> {
               therapy: row.prescriptions?.medications?.name ?? "Unassigned therapy",
               payer: row.insurance_policies?.payer_name ?? "Payer pending",
               status: humanizeSnakeCase(row.status),
-              nextAction: row.next_action ?? "Review case",
+              nextAction: row.next_action ?? (isDoctor ? "Add doctor feedback" : "Review case"),
               priorityLabel: getPriorityLabel(row.priority),
               tone: getStatusTone(row.status, row.priority)
             }))
-          : demoDashboard.cases,
+          : isDoctor
+            ? []
+            : demoDashboard.cases,
       outreachQueue:
         communicationRows.length > 0
           ? communicationRows.map((row: any) => ({
-              recipient: "Scheduled outreach",
+              recipient: isDoctor ? "Assigned case update" : "Scheduled outreach",
               channel: row.channel.toUpperCase(),
               summary: row.summary,
               scheduledFor: formatScheduledAt(row.scheduled_for)
             }))
-          : demoDashboard.outreachQueue,
-      activityLog: demoCases.slice(0, 3).map((entry, index) => ({
-        title: `${entry.patientName} moved into ${entry.status}`,
-        description: `${entry.therapy} with ${entry.payer}. Next action: ${entry.nextAction}.`,
-        timestamp: index === 0 ? "Just now" : `${index * 18 + 16} minutes ago`
-      }))
+          : isDoctor
+            ? []
+            : demoDashboard.outreachQueue,
+      activityLog:
+        caseRows.length > 0
+          ? caseRows.slice(0, 3).map((entry: any, index: number) => ({
+              title: `${`${entry.patients?.first_name ?? ""} ${entry.patients?.last_name ?? ""}`.trim() || "Assigned patient"} moved into ${humanizeSnakeCase(entry.status)}`,
+              description: `${entry.prescriptions?.medications?.name ?? "Medication pending"} with ${entry.insurance_policies?.payer_name ?? "payer pending"}. Next action: ${entry.next_action ?? (isDoctor ? "Add doctor feedback" : "Review case")}.`,
+              timestamp: index === 0 ? "Just now" : `${index * 18 + 16} minutes ago`
+            }))
+          : isDoctor
+            ? []
+            : demoCases.slice(0, 3).map((entry, index) => ({
+                title: `${entry.patientName} moved into ${entry.status}`,
+                description: `${entry.therapy} with ${entry.payer}. Next action: ${entry.nextAction}.`,
+                timestamp: index === 0 ? "Just now" : `${index * 18 + 16} minutes ago`
+              }))
     };
   } catch {
-    return demoDashboard;
+    return actor?.role === "provider" ? createEmptyDoctorDashboard() : demoDashboard;
   }
+}
+
+function createEmptyDoctorDashboard(): ProviderDashboardData {
+  return {
+    sourceLabel: "Live Supabase data",
+    metrics: [
+      {
+        label: "Assigned patients",
+        value: "0",
+        detail: "Patients currently assigned to you for clinical review and response.",
+        tone: "default"
+      },
+      {
+        label: "Prior auth review",
+        value: "0",
+        detail: "Assigned authorizations waiting on supporting documentation or payer action.",
+        tone: "warning"
+      },
+      {
+        label: "Access support active",
+        value: "0",
+        detail: "Assigned patients with active affordability or bridge support workflows.",
+        tone: "accent"
+      },
+      {
+        label: "Urgent follow-up",
+        value: "0",
+        detail: "Assigned cases flagged as blocked or critical for doctor action.",
+        tone: "critical"
+      }
+    ],
+    cases: [],
+    outreachQueue: [],
+    activityLog: []
+  };
 }

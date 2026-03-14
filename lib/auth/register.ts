@@ -1,15 +1,21 @@
 export const registerRoleDetails = {
   admin: {
-    label: "Administrator",
-    defaultTitle: "Program administrator",
+    label: "Admin",
+    defaultTitle: "Administrator",
     description:
-      "Creates the organization shell, receives oversight notifications, and starts with a seeded command-center queue."
+      "Creates the organization shell, receives oversight notifications, and starts with a seeded admin control center."
+  },
+  patient: {
+    label: "Patient",
+    defaultTitle: "Patient",
+    description:
+      "Views a personal dashboard, manages claims, and tracks assigned medications, organization, and office details."
   },
   provider: {
-    label: "Provider",
-    defaultTitle: "Referring specialist",
+    label: "Doctor",
+    defaultTitle: "Referring doctor",
     description:
-      "Creates a linked provider record and seeds active therapy starts tied to clinical work."
+      "Creates a linked doctor record and seeds active therapy starts tied to clinical work."
   },
   case_manager: {
     label: "Case manager",

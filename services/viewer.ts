@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
+import { registerRoleDetails } from "@/lib/auth/register";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { demoViewer } from "@/services/demo-data";
@@ -28,23 +29,39 @@ export const getViewerContext = cache(async (): Promise<ViewerContext> => {
       .eq("id", session.user.id)
       .maybeSingle();
 
-    const { data: organization } = profile?.organization_id
-      ? await db
-          .from("organizations")
-          .select("name")
-          .eq("id", profile.organization_id)
-          .maybeSingle()
-      : { data: null };
-
     const rawRole = profile?.role ?? "";
     const role = isRegisterRole(rawRole) ? rawRole : "staff";
+    let organizationId = profile?.organization_id ?? null;
+    let organizationName = "SpecialtyRx Organization";
+    let mode: ViewerContext["mode"] = "demo";
+
+    if (!organizationId && role === "patient") {
+      const { data: patient } = await db
+        .from("patients")
+        .select("organization_id")
+        .eq("profile_id", session.user.id)
+        .maybeSingle();
+
+      organizationId = patient?.organization_id ?? null;
+    }
+
+    if (organizationId) {
+      const { data: organization } = await db
+        .from("organizations")
+        .select("name")
+        .eq("id", organizationId)
+        .maybeSingle();
+
+      organizationName = organization?.name ?? organizationName;
+      mode = "live";
+    }
 
     return {
       displayName: profile?.full_name ?? session.user.email ?? "Workspace user",
       role,
-      roleLabel: role.replaceAll("_", " "),
-      organizationName: organization?.name ?? "SpecialtyRx Organization",
-      mode: profile?.organization_id ? "live" : "demo",
+      roleLabel: registerRoleDetails[role].label,
+      organizationName,
+      mode,
       hasSession: true
     };
   } catch {

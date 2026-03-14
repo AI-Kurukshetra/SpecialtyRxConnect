@@ -1,8 +1,11 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { hasPublicSupabaseEnv } from "@/lib/env";
+import {
+  createServerSupabaseClient,
+  createServiceSupabaseClient
+} from "@/lib/supabase/server";
+import { hasPublicSupabaseEnv, hasServiceRoleEnv } from "@/lib/env";
 import type { IntakeActionState } from "@/types/intake";
 
 function readValue(formData: FormData, key: string) {
@@ -13,10 +16,10 @@ export async function submitPatientRegistrationAction(
   _previousState: IntakeActionState,
   formData: FormData
 ): Promise<IntakeActionState> {
-  if (!hasPublicSupabaseEnv()) {
+  if (!hasPublicSupabaseEnv() || !hasServiceRoleEnv()) {
     return {
       status: "error",
-      message: "Patient registration requires public Supabase credentials."
+      message: "Patient registration requires public and service Supabase credentials."
     };
   }
 
@@ -40,6 +43,9 @@ export async function submitPatientRegistrationAction(
   }
 
   const supabase = await createServerSupabaseClient();
+  // Supabase's generated types do not flow cleanly through this server action path.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db: any = createServiceSupabaseClient();
   const {
     data: { session }
   } = await supabase.auth.getSession();
@@ -51,7 +57,7 @@ export async function submitPatientRegistrationAction(
     };
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile, error: profileError } = await db
     .from("profiles")
     .select("organization_id")
     .eq("id", session.user.id)
@@ -77,7 +83,7 @@ export async function submitPatientRegistrationAction(
   const lastName = rest.join(" ") || "Patient";
 
   try {
-    const { data: patient, error: patientError } = await supabase
+    const { data: patient, error: patientError } = await db
       .from("patients")
       .insert({
         organization_id: organizationId,
@@ -100,7 +106,7 @@ export async function submitPatientRegistrationAction(
       };
     }
 
-    const providerResult = await supabase
+    const providerResult = await db
       .from("providers")
       .insert({
         organization_id: organizationId,
@@ -119,9 +125,9 @@ export async function submitPatientRegistrationAction(
       };
     }
 
-    const medicationId = await ensureMedication(supabase, medicationName, therapyArea);
+    const medicationId = await ensureMedication(db, medicationName, therapyArea);
 
-    const { data: prescription, error: prescriptionError } = await supabase
+    const { data: prescription, error: prescriptionError } = await db
       .from("prescriptions")
       .insert({
         organization_id: organizationId,
@@ -142,7 +148,7 @@ export async function submitPatientRegistrationAction(
       };
     }
 
-    const { data: insurance, error: insuranceError } = await supabase
+    const { data: insurance, error: insuranceError } = await db
       .from("insurance_policies")
       .insert({
         organization_id: organizationId,
@@ -162,7 +168,7 @@ export async function submitPatientRegistrationAction(
       };
     }
 
-    const { data: patientCase, error: caseError } = await supabase
+    const { data: patientCase, error: caseError } = await db
       .from("patient_cases")
       .insert({
         organization_id: organizationId,
@@ -203,7 +209,12 @@ export async function submitPatientRegistrationAction(
   }
 }
 
-async function ensureMedication(supabase: ReturnType<typeof createServerSupabaseClient>, name: string, therapyArea?: string) {
+async function ensureMedication(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  supabase: any,
+  name: string,
+  therapyArea?: string
+) {
   const normalizedName = name.trim();
   const { data: existing } = await supabase
     .from("medications")

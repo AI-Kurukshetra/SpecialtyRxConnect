@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { demoCaseDetails, demoCases } from "@/services/demo-data";
+import { getCurrentWorkspaceActor } from "@/services/workspace-access";
 import { humanizeSnakeCase } from "@/utils/formatters";
 import type { CaseDetail, CaseListItem } from "@/types/workspace";
 
@@ -12,34 +12,35 @@ export async function getCaseList(search = ""): Promise<CaseListItem[]> {
     return filterDemoCases(normalizedSearch);
   }
 
+  let actor: Awaited<ReturnType<typeof getCurrentWorkspaceActor>> = null;
+
   try {
-    const supabase = await createServerSupabaseClient();
-    const db = supabase as any;
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+    actor = await getCurrentWorkspaceActor();
 
-    if (!session?.user) {
+    if (!actor) {
       return filterDemoCases(normalizedSearch);
     }
 
-    const { data: profile } = await db
-      .from("profiles")
-      .select("organization_id")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const isDoctor = actor.role === "provider";
+    if (isDoctor && !actor.provider?.id) {
+      return [];
+    }
 
-    if (!profile?.organization_id) {
+    if (!actor.organizationId) {
       return filterDemoCases(normalizedSearch);
     }
 
-    const query = db
+    let query = actor.db
       .from("patient_cases")
       .select(
         "id, status, priority, next_action, updated_at, case_managers(full_name), patients(first_name,last_name), prescriptions(medications(name,therapy_area)), insurance_policies(payer_name)"
       )
-      .eq("organization_id", profile.organization_id)
+      .eq("organization_id", actor.organizationId)
       .order("updated_at", { ascending: false });
+
+    if (isDoctor && actor.provider?.id) {
+      query = query.eq("provider_id", actor.provider.id);
+    }
 
     const { data, error } = normalizedSearch
       ? await query.or(
@@ -48,7 +49,7 @@ export async function getCaseList(search = ""): Promise<CaseListItem[]> {
       : await query;
 
     if (error || !data) {
-      return filterDemoCases(normalizedSearch);
+      return actor.role === "provider" ? [] : filterDemoCases(normalizedSearch);
     }
 
     const mapped = data.map((row: any) => ({
@@ -70,9 +71,9 @@ export async function getCaseList(search = ""): Promise<CaseListItem[]> {
       }).format(new Date(row.updated_at))
     }));
 
-    return mapped.length > 0 ? mapped : filterDemoCases(normalizedSearch);
+    return mapped.length > 0 ? mapped : actor.role === "provider" ? [] : filterDemoCases(normalizedSearch);
   } catch {
-    return filterDemoCases(normalizedSearch);
+    return actor?.role === "provider" ? [] : filterDemoCases(normalizedSearch);
   }
 }
 
@@ -81,65 +82,82 @@ export async function getCaseDetail(caseId: string): Promise<CaseDetail> {
     return demoCaseDetails[caseId] ?? demoCaseDetails["case-ava-thompson"];
   }
 
-  try {
-    const supabase = await createServerSupabaseClient();
-    const db = supabase as any;
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+  let actor: Awaited<ReturnType<typeof getCurrentWorkspaceActor>> = null;
 
-    if (!session?.user) {
+  try {
+    actor = await getCurrentWorkspaceActor();
+
+    if (!actor) {
       return demoCaseDetails[caseId] ?? demoCaseDetails["case-ava-thompson"];
     }
 
-    const { data: profile } = await db
-      .from("profiles")
-      .select("organization_id")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const isDoctor = actor.role === "provider";
+    if (isDoctor && !actor.provider?.id) {
+      notFound();
+    }
 
-    if (!profile?.organization_id) {
+    if (!actor.organizationId) {
       return demoCaseDetails[caseId] ?? demoCaseDetails["case-ava-thompson"];
+    }
+
+    let caseQuery = actor.db
+      .from("patient_cases")
+      .select(
+        "id, status, priority, next_action, next_action_due_at, barrier_summary, case_managers(full_name), patients(*), providers(full_name,specialty,npi,practice_name), prescriptions(dosage,diagnosis,medications(name,therapy_area)), insurance_policies(payer_name,plan_name,member_id,status,verification_notes)"
+      )
+      .eq("organization_id", actor.organizationId)
+      .eq("id", caseId);
+
+    let paQuery = actor.db
+      .from("prior_authorizations")
+      .select("id, status, submitted_at, decision_due_at, clinical_requirements, patient_cases!inner(provider_id)")
+      .eq("organization_id", actor.organizationId)
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+
+    let assistanceQuery = actor.db
+      .from("financial_assistance_cases")
+      .select("id, program_name, status, estimated_monthly_savings, patient_cases!inner(provider_id)")
+      .eq("organization_id", actor.organizationId)
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+
+    let communicationsQuery = actor.db
+      .from("communications")
+      .select("id, channel, direction, summary, created_at, patient_cases!inner(provider_id)")
+      .eq("organization_id", actor.organizationId)
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+
+    let documentsQuery = actor.db
+      .from("documents")
+      .select("id, title, category, created_at, patient_cases!inner(provider_id)")
+      .eq("organization_id", actor.organizationId)
+      .eq("case_id", caseId)
+      .order("created_at", { ascending: false });
+
+    if (isDoctor && actor.provider?.id) {
+      caseQuery = caseQuery.eq("provider_id", actor.provider.id);
+      paQuery = paQuery.eq("patient_cases.provider_id", actor.provider.id);
+      assistanceQuery = assistanceQuery.eq("patient_cases.provider_id", actor.provider.id);
+      communicationsQuery = communicationsQuery.eq(
+        "patient_cases.provider_id",
+        actor.provider.id
+      );
+      documentsQuery = documentsQuery.eq("patient_cases.provider_id", actor.provider.id);
     }
 
     const [caseResult, paResult, faResult, communicationsResult, docsResult] =
       await Promise.all([
-        db
-          .from("patient_cases")
-          .select(
-            "id, status, priority, next_action, next_action_due_at, barrier_summary, case_managers(full_name), patients(*), providers(full_name,specialty,npi,practice_name), prescriptions(dosage,diagnosis,medications(name,therapy_area)), insurance_policies(payer_name,plan_name,member_id,status,verification_notes)"
-          )
-          .eq("organization_id", profile.organization_id)
-          .eq("id", caseId)
-          .maybeSingle(),
-        db
-          .from("prior_authorizations")
-          .select("id, status, submitted_at, decision_due_at, clinical_requirements")
-          .eq("organization_id", profile.organization_id)
-          .eq("case_id", caseId)
-          .order("created_at", { ascending: false }),
-        db
-          .from("financial_assistance_cases")
-          .select("id, program_name, status, estimated_monthly_savings")
-          .eq("organization_id", profile.organization_id)
-          .eq("case_id", caseId)
-          .order("created_at", { ascending: false }),
-        db
-          .from("communications")
-          .select("id, channel, direction, summary, created_at")
-          .eq("organization_id", profile.organization_id)
-          .eq("case_id", caseId)
-          .order("created_at", { ascending: false }),
-        db
-          .from("documents")
-          .select("id, title, category, created_at")
-          .eq("organization_id", profile.organization_id)
-          .eq("case_id", caseId)
-          .order("created_at", { ascending: false })
+        caseQuery.maybeSingle(),
+        paQuery,
+        assistanceQuery,
+        communicationsQuery,
+        documentsQuery
       ]);
 
     if (caseResult.error || !caseResult.data) {
-      if (demoCaseDetails[caseId]) {
+      if (actor.role !== "provider" && demoCaseDetails[caseId]) {
         return demoCaseDetails[caseId];
       }
 
@@ -220,7 +238,7 @@ export async function getCaseDetail(caseId: string): Promise<CaseDetail> {
         })) ?? []
     };
   } catch {
-    if (demoCaseDetails[caseId]) {
+    if (actor?.role !== "provider" && demoCaseDetails[caseId]) {
       return demoCaseDetails[caseId];
     }
 

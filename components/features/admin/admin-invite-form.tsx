@@ -14,6 +14,11 @@ const initialState: AdminInviteActionState = {
 
 const roleOptions = [
   {
+    value: "patient",
+    label: "Patient",
+    description: "Creates or links the patient record and unlocks the self-service claims workspace."
+  },
+  {
     value: "provider",
     label: "Provider (Doctor)",
     description: "Creates provider records and ready cases tied to clinical workflows."
@@ -41,7 +46,7 @@ export function AdminInviteForm() {
     <Card className="rounded-[36px] border border-slate-100 bg-white/80 p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900/70">
       <span className="eyebrow">Invite collaborator</span>
       <h2 className="mt-3 font-display text-3xl tracking-tight text-slate-900 dark:text-white">
-        Add providers, case managers, or staff
+        Add patients, providers, case managers, or staff
       </h2>
       <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
         Only admins can invite new workspace members. Select the role, enter the credentials, and the system
@@ -124,7 +129,7 @@ export function AdminInviteForm() {
         ) : null}
 
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Inviting collaborator…" : "Invite to workspace"}
+          {isPending ? "Inviting collaborator..." : "Invite to workspace"}
         </Button>
       </form>
     </Card>

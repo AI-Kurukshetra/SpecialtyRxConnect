@@ -4,13 +4,14 @@ import { createServerSupabaseClient, createServiceSupabaseClient } from "@/lib/s
 import { hasPublicSupabaseEnv, hasServiceRoleEnv } from "@/lib/env";
 import { bootstrapRegisteredUser } from "@/services/auth/bootstrap";
 import type { RegisterRole } from "@/lib/auth/register";
+import type { Database } from "@/types/database";
 
 export type AdminInviteActionState = {
   status: "idle" | "success" | "error";
   message?: string;
 };
 
-const allowList: RegisterRole[] = ["provider", "case_manager", "staff"];
+const allowList: RegisterRole[] = ["patient", "provider", "case_manager", "staff"];
 
 export async function inviteUserAction(
   _previousState: AdminInviteActionState,
@@ -35,24 +36,32 @@ export async function inviteUserAction(
     };
   }
 
-  const { data: profile } = await supabaseSession
+  const { data: profileData } = await supabaseSession
     .from("profiles")
     .select("role, organization_id")
     .eq("id", session.user.id)
     .maybeSingle();
+  const profile = profileData as Pick<
+    Database["public"]["Tables"]["profiles"]["Row"],
+    "role" | "organization_id"
+  > | null;
 
-  if (profile?.role !== "admin") {
+  if (!profile || profile.role !== "admin" || !profile.organization_id) {
     return {
       status: "error",
       message: "Only administrators can send invites."
     };
   }
 
-  const { data: organization } = await supabaseSession
+  const { data: organizationData } = await supabaseSession
     .from("organizations")
     .select("name")
     .eq("id", profile.organization_id)
     .maybeSingle();
+  const organization = organizationData as Pick<
+    Database["public"]["Tables"]["organizations"]["Row"],
+    "name"
+  > | null;
 
   if (!organization?.name) {
     return {

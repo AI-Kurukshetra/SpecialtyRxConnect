@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { RegisterForm } from "@/components/features/auth/register-form";
@@ -6,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { getViewerContext } from "@/services/viewer";
 
 export default async function RegisterPage() {
+  const contactRoute = "/contactus" as Route;
   const viewer = await getViewerContext();
   if (viewer.hasSession) {
     redirect("/intake");
@@ -14,7 +16,7 @@ export default async function RegisterPage() {
   const onboardingFlow = [
     {
       title: "1. Create the admin shell",
-      body: "That's the only role this form creates. It provisions the Supabase auth user, seeds the organization, and builds the workspace queue."
+      body: "This is the only public registration path. It provisions the Supabase auth user, seeds the organization, and builds the admin workspace."
     },
     {
       title: "2. Invite providers and case managers",
@@ -37,6 +39,7 @@ export default async function RegisterPage() {
           currentPath="/register"
           navItems={[
             { href: "/", label: "Overview" },
+            { href: contactRoute, label: "Contact Us" },
             { href: "/login", label: "Login" },
             { href: "/register", label: "Register" }
           ]}

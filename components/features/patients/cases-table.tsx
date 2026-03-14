@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { StatusPill } from "@/components/shared/status-pill";
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { CaseListItem } from "@/types/workspace";
 
 type CasesTableProps = {
@@ -9,6 +10,15 @@ type CasesTableProps = {
 };
 
 export function CasesTable({ cases }: CasesTableProps) {
+  if (cases.length === 0) {
+    return (
+      <EmptyState
+        description="No assigned patients matched the current filters."
+        title="No patient cases found"
+      />
+    );
+  }
+
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">
@@ -35,7 +45,7 @@ export function CasesTable({ cases }: CasesTableProps) {
                     {entry.patientName}
                   </Link>
                   <div className="mt-2 text-xs uppercase tracking-[0.22em] text-slate-500">
-                    {entry.therapyArea} • {entry.updatedAt}
+                    {entry.therapyArea} | {entry.updatedAt}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-slate-700">{entry.therapy}</td>

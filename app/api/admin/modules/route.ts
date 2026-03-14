@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { modulePermissions } from "@/lib/permissions";
+import type { Database } from "@/types/database";
 
 export async function GET() {
   if (!hasPublicSupabaseEnv()) {
@@ -21,11 +22,15 @@ export async function GET() {
       return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profileData, error: profileError } = await supabase
       .from("profiles")
       .select("role")
       .eq("id", session.user.id)
       .maybeSingle();
+    const profile = profileData as Pick<
+      Database["public"]["Tables"]["profiles"]["Row"],
+      "role"
+    > | null;
 
     if (profileError) {
       throw profileError;

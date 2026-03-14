@@ -1,5 +1,6 @@
 "use client";
 
+import type { Route } from "next";
 import Link from "next/link";
 import { useActionState } from "react";
 import { signInAction, type LoginActionState } from "@/app/login/actions";
@@ -12,6 +13,7 @@ const initialState: LoginActionState = {
 };
 
 export function LoginForm() {
+  const contactRoute = "/contactus" as Route;
   const [state, formAction, isPending] = useActionState(signInAction, initialState);
 
   return (
@@ -55,6 +57,10 @@ export function LoginForm() {
           Need a new account?{" "}
           <Link className="font-medium text-slate-900 underline" href="/register">
             Register here
+          </Link>
+          .{" "}
+          <Link className="font-medium text-slate-900 underline" href={contactRoute}>
+            Contact support
           </Link>
           .
         </p>

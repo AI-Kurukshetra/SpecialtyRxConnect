@@ -29,6 +29,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Provision teams, roles, and auditing so people land in the right workspace slice.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -40,6 +41,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Collect enrollment paperwork and organization details for each therapy start.",
     privileges: {
       admin: fullAccess,
+      patient: addAccess,
       provider: addAccess,
       case_manager: manageAccess,
       staff: viewOnly
@@ -51,6 +53,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Centralize clinical, demographic, and payer data inside each patient card.",
     privileges: {
       admin: fullAccess,
+      patient: editAccess,
       provider: editAccess,
       case_manager: editAccess,
       staff: viewOnly
@@ -62,6 +65,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Author therapies, attach medication details, and keep dosage history accurate.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: manageAccess,
       case_manager: viewOnly,
       staff: viewOnly
@@ -73,6 +77,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Submit, track, and respond to payer reviews inside the same workflow.",
     privileges: {
       admin: fullAccess,
+      patient: addAccess,
       provider: addAccess,
       case_manager: manageAccess,
       staff: viewOnly
@@ -84,6 +89,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Check policies, payer coverage, and member IDs before therapy moves forward.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: addAccess,
       case_manager: manageAccess,
       staff: viewOnly
@@ -95,6 +101,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Track copay, bridge, and foundations so savings are visible per case.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: addAccess,
       case_manager: manageAccess,
       staff: viewOnly
@@ -106,6 +113,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Document refills, missed doses, and patient feedback within each case.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -117,6 +125,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Capture adverse events with severity flags and follow-up tasks.",
     privileges: {
       admin: fullAccess,
+      patient: addAccess,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -128,6 +137,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Connect to specialty pharmacies to confirm shipment and pick-up.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -139,6 +149,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "SMS, email, and outbound reminders live directly inside each case.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: addAccess,
       case_manager: addAccess,
       staff: viewOnly
@@ -150,6 +161,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Attach notes, structured fields, and audit tags before submission.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: manageAccess,
       case_manager: editAccess,
       staff: viewOnly
@@ -161,6 +173,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Store PDFs, images, and OCR metadata for payer or manufacturer review.",
     privileges: {
       admin: fullAccess,
+      patient: addAccess,
       provider: addAccess,
       case_manager: addAccess,
       staff: viewOnly
@@ -172,6 +185,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Automate notifications, reminders, and escalations without leaving the surface.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -183,6 +197,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Monitor throughput, blockers, and financial impact across the org.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -194,6 +209,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "See who touched which case, what changed, and when.",
     privileges: {
       admin: fullAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly
@@ -205,6 +221,7 @@ export const modulePermissions: ModulePermission[] = [
     description: "Push and pull documents with connected EHR partners.",
     privileges: {
       admin: manageAccess,
+      patient: viewOnly,
       provider: viewOnly,
       case_manager: viewOnly,
       staff: viewOnly

@@ -22,17 +22,17 @@ export function RegisterForm() {
       <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
       <span className="eyebrow register-kicker">External registration</span>
       <h1 className="register-heading mt-3 max-w-xl font-display text-4xl tracking-tight sm:text-5xl">
-        Create your administrator workspace.
+        Create your admin workspace.
       </h1>
       <p className="register-body mt-4 max-w-2xl text-sm leading-7 sm:text-base">
-        This form creates the first admin who owns the organization. After signing in, invite
-        other collaborators from the workspace admin console—providers, case managers, and staff
-        gain access through the admin pathway only.
+        This form creates the first admin who owns the organization. After signing
+        in, invite other collaborators from the workspace admin console. Providers,
+        case managers, and staff gain access through the admin pathway only.
       </p>
 
       <div className="register-subtle-surface mt-6 rounded-[28px] p-5">
         <div className="register-kicker text-[11px] uppercase tracking-[0.28em]">
-          Workspace admin
+          Admin access
         </div>
         <div className="register-heading mt-2 font-display text-2xl tracking-tight">
           {roleDetail.label}
@@ -114,7 +114,7 @@ export function RegisterForm() {
           </div>
 
           <Button className="w-full sm:w-auto" disabled={isPending} type="submit">
-            {isPending ? "Creating admin workspace..." : "Create administrator account"}
+            {isPending ? "Creating admin workspace..." : "Create admin account"}
           </Button>
         </div>
       </form>

@@ -57,6 +57,53 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["case_managers"]["Insert"]>;
       };
+      claims: {
+        Row: {
+          amount: number | null;
+          case_id: string | null;
+          claim_number: string;
+          claim_type: "medical" | "pharmacy" | "reimbursement" | "support";
+          created_at: string;
+          id: string;
+          note: string | null;
+          organization_id: string;
+          patient_id: string;
+          payer_name: string | null;
+          service_date: string | null;
+          status:
+            | "draft"
+            | "submitted"
+            | "in_review"
+            | "approved"
+            | "partially_approved"
+            | "denied"
+            | "paid";
+          updated_at: string;
+        };
+        Insert: {
+          amount?: number | null;
+          case_id?: string | null;
+          claim_number: string;
+          claim_type?: "medical" | "pharmacy" | "reimbursement" | "support";
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          organization_id: string;
+          patient_id: string;
+          payer_name?: string | null;
+          service_date?: string | null;
+          status?:
+            | "draft"
+            | "submitted"
+            | "in_review"
+            | "approved"
+            | "partially_approved"
+            | "denied"
+            | "paid";
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["claims"]["Insert"]>;
+      };
       communications: {
         Row: {
           case_id: string | null;
@@ -318,6 +365,7 @@ export type Database = {
           organization_id: string;
           phone: string | null;
           preferred_channel: "sms" | "email" | "call" | "portal";
+          profile_id: string | null;
           sex: "female" | "male" | "non_binary" | "unknown";
           state: string | null;
           updated_at: string;
@@ -335,6 +383,7 @@ export type Database = {
           organization_id: string;
           phone?: string | null;
           preferred_channel?: "sms" | "email" | "call" | "portal";
+          profile_id?: string | null;
           sex?: "female" | "male" | "non_binary" | "unknown";
           state?: string | null;
           updated_at?: string;
@@ -420,7 +469,7 @@ export type Database = {
           id: string;
           organization_id: string | null;
           phone: string | null;
-          role: "admin" | "provider" | "case_manager" | "staff";
+          role: "admin" | "patient" | "provider" | "case_manager" | "staff";
           title: string | null;
           updated_at: string;
         };
@@ -431,7 +480,7 @@ export type Database = {
           id: string;
           organization_id?: string | null;
           phone?: string | null;
-          role?: "admin" | "provider" | "case_manager" | "staff";
+          role?: "admin" | "patient" | "provider" | "case_manager" | "staff";
           title?: string | null;
           updated_at?: string;
         };

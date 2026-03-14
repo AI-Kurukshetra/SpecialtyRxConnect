@@ -1,7 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/utils/cn";
-import { buttonStyles } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 type NavItem = {
@@ -16,14 +15,14 @@ type SiteHeaderProps = {
 
 export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
   return (
-    <header className="panel sticky top-4 z-20 flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+    <header className="site-header panel sticky top-4 z-20 flex flex-col gap-4 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
       <Link className="flex items-center gap-3" href="/">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-ink text-sm font-semibold text-white">
+        <div className="site-header__mark">
           SR
         </div>
         <div className="flex flex-col">
-          <span className="text-[11px] uppercase tracking-[0.3em] text-slate-500">
-            Specialty operations
+          <span className="text-[11px] uppercase tracking-[0.32em] text-slate-500">
+            Specialty therapy platform
           </span>
           <span className="text-sm font-medium text-slate-900">
             SpecialtyRx Connect
@@ -32,20 +31,23 @@ export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
       </Link>
 
       <div className="flex items-center gap-3">
+        <div className="site-status hidden xl:flex">
+          Intake, access, affordability, and readiness in one queue
+        </div>
         <ThemeToggle />
-        <nav className="flex flex-wrap gap-2" aria-label="Primary">
-        {navItems.map((item) => (
-          <Link
-            className={cn(
-              buttonStyles(currentPath === item.href ? "primary" : "secondary"),
-              "min-h-10 px-4 text-xs sm:text-sm"
-            )}
-            href={item.href}
-            key={item.href}
-          >
-            {item.label}
-          </Link>
-        ))}
+        <nav className="site-nav" aria-label="Primary">
+          {navItems.map((item) => (
+            <Link
+              className={cn(
+                "site-nav__link",
+                currentPath === item.href && "site-nav__link--active"
+              )}
+              href={item.href}
+              key={item.href}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
       </div>
     </header>

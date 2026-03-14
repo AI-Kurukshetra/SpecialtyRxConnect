@@ -60,13 +60,6 @@ export async function registerAction(
     };
   }
 
-  if (providerNpi && !isValidNpi(providerNpi)) {
-    return {
-      status: "error",
-      message: "Provider NPI must be a 10-digit number."
-    };
-  }
-
   const serviceClient = createServiceSupabaseClient();
   let createdUserId: string | null = null;
 
@@ -143,10 +136,6 @@ function readOptionalValue(formData: FormData, key: string) {
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-}
-
-function isValidNpi(value: string) {
-  return /^\d{10}$/.test(value);
 }
 
 function isValidOrganizationName(value: string) {

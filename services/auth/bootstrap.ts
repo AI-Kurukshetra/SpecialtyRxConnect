@@ -109,6 +109,17 @@ export async function bootstrapRegisteredUser({
     userId
   });
 
+  const patientId =
+    role === "patient"
+      ? await ensureLinkedPatient(client, {
+          email,
+          fullName,
+          organizationId: organization.id,
+          phone,
+          userId
+        })
+      : null;
+
   const providerId =
     role === "provider"
       ? await ensureLinkedProvider(client, {
@@ -148,6 +159,13 @@ export async function bootstrapRegisteredUser({
     ownerProfileId: userId,
     providerId
   });
+
+  if (patientId) {
+    await ensureStarterClaim(client, {
+      organizationId: organization.id,
+      patientId
+    });
+  }
 
   await ensureRegistrationAuditLog(client, {
     organizationId: organization.id,
@@ -205,7 +223,7 @@ async function upsertProfile(
   }: {
     email: string;
     fullName: string;
-    organizationId: string;
+    organizationId: string | null;
     phone?: string;
     role: RegisterRole;
     title: string;
@@ -639,6 +657,7 @@ async function ensurePatient(
     firstName,
     lastName,
     organizationId,
+    profileId,
     phone,
     state
   }: {
@@ -648,6 +667,7 @@ async function ensurePatient(
     firstName: string;
     lastName: string;
     organizationId: string;
+    profileId?: string;
     phone: string;
     state: string;
   }
@@ -664,6 +684,20 @@ async function ensurePatient(
   }
 
   if (existing?.id) {
+    if (profileId) {
+      const { error: updateError } = await client
+        .from("patients")
+        .update({
+          profile_id: profileId,
+          phone
+        })
+        .eq("id", existing.id);
+
+      if (updateError) {
+        throw new Error(updateError.message);
+      }
+    }
+
     return existing.id;
   }
 
@@ -679,6 +713,7 @@ async function ensurePatient(
       organization_id: organizationId,
       phone,
       preferred_channel: "sms",
+      profile_id: profileId ?? null,
       sex: "unknown",
       state,
       zip_code: "00000"
@@ -691,6 +726,95 @@ async function ensurePatient(
   }
 
   return data.id;
+}
+
+async function ensureLinkedPatient(
+  client: ServiceClient,
+  {
+    email,
+    fullName,
+    organizationId,
+    phone,
+    userId
+  }: {
+    email: string;
+    fullName: string;
+    organizationId: string;
+    phone?: string;
+    userId: string;
+  }
+) {
+  const [firstName, ...rest] = fullName.trim().split(/\s+/);
+  const lastName = rest.join(" ") || "Patient";
+
+  return ensurePatient(client, {
+    city: "Pending",
+    dateOfBirth: "1990-01-01",
+    email,
+    firstName: firstName || "Patient",
+    lastName,
+    organizationId,
+    profileId: userId,
+    phone: phone ?? "",
+    state: "Pending"
+  });
+}
+
+async function ensureStarterClaim(
+  client: ServiceClient,
+  {
+    organizationId,
+    patientId
+  }: {
+    organizationId: string;
+    patientId: string;
+  }
+) {
+  const { data: existing, error: existingError } = await client
+    .from("claims")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("patient_id", patientId)
+    .maybeSingle();
+
+  if (existingError) {
+    throw new Error(existingError.message);
+  }
+
+  if (existing?.id) {
+    return;
+  }
+
+  const { data: patientCase, error: caseError } = await client
+    .from("patient_cases")
+    .select("id")
+    .eq("organization_id", organizationId)
+    .eq("patient_id", patientId)
+    .order("created_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (caseError) {
+    throw new Error(caseError.message);
+  }
+
+  const claimNumber = `CLM-${patientId.replaceAll("-", "").slice(0, 8).toUpperCase()}`;
+  const { error } = await client.from("claims").insert({
+    amount: 0,
+    case_id: patientCase?.id ?? null,
+    claim_number: claimNumber,
+    claim_type: "medical",
+    note: "Starter claim created during patient onboarding.",
+    organization_id: organizationId,
+    patient_id: patientId,
+    payer_name: "Payer pending",
+    service_date: new Date().toISOString().slice(0, 10),
+    status: "draft"
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
 }
 
 async function ensureInsurancePolicy(

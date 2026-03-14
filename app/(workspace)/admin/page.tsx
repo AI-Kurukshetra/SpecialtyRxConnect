@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 const stats = [
   { label: "Modules tracked", value: `${modulePermissions.length}` },
-  { label: "Enforced roles", value: "4 workspace roles" },
+  { label: "Enforced roles", value: "5 workspace roles" },
   { label: "API endpoint", value: "/api/admin/modules" }
 ];
 
@@ -86,7 +86,7 @@ export default async function AdminPage() {
                   Grow the workspace safely
                 </h2>
                 <p className="mt-2 text-sm leading-7 text-slate-600 dark:text-slate-300">
-                  Invite providers, case managers, or staff members so each role can see the views outlined in the RBAC matrix.
+                  Invite patients, providers, case managers, or staff members so each role can see the views outlined in the RBAC matrix.
                 </p>
               </div>
               <div className="text-xs uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">

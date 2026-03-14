@@ -1,6 +1,6 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { demoReports } from "@/services/demo-data";
+import { getCurrentWorkspaceActor } from "@/services/workspace-access";
 import type { ReportsSnapshot } from "@/types/workspace";
 
 export async function getReportsSnapshot(): Promise<ReportsSnapshot> {
@@ -8,35 +8,38 @@ export async function getReportsSnapshot(): Promise<ReportsSnapshot> {
     return demoReports;
   }
 
+  let actor: Awaited<ReturnType<typeof getCurrentWorkspaceActor>> = null;
+
   try {
-    const supabase = await createServerSupabaseClient();
-    const db = supabase as any;
-    const {
-      data: { session }
-    } = await supabase.auth.getSession();
+    actor = await getCurrentWorkspaceActor();
 
-    if (!session?.user) {
+    if (!actor) {
       return demoReports;
     }
 
-    const { data: profile } = await db
-      .from("profiles")
-      .select("organization_id")
-      .eq("id", session.user.id)
-      .maybeSingle();
+    const isDoctor = actor.role === "provider";
+    if (isDoctor && !actor.provider?.id) {
+      return createEmptyDoctorReports();
+    }
 
-    if (!profile?.organization_id) {
+    if (!actor.organizationId) {
       return demoReports;
     }
 
-    const { data, error } = await db
+    let query = actor.db
       .from("patient_cases")
       .select(
-        "id, status, created_at, patients(first_name,last_name), prescriptions(medications(name)), insurance_policies(payer_name), case_managers(full_name)"
+        "id, status, created_at, priority, patients(first_name,last_name), prescriptions(medications(name)), insurance_policies(payer_name), case_managers(full_name)"
       )
-      .eq("organization_id", profile.organization_id)
+      .eq("organization_id", actor.organizationId)
       .order("created_at", { ascending: false })
       .limit(50);
+
+    if (isDoctor && actor.provider?.id) {
+      query = query.eq("provider_id", actor.provider.id);
+    }
+
+    const { data, error } = await query;
 
     if (error || !data) {
       return demoReports;
@@ -56,19 +59,44 @@ export async function getReportsSnapshot(): Promise<ReportsSnapshot> {
       owner: row.case_managers?.full_name ?? "Unassigned"
     }));
 
+    const criticalRows = rows.filter(
+      (_row: (typeof rows)[number], index: number) => (data[index] as any)?.priority === "critical"
+    ).length;
+    const reviewRows = rows.filter((row: (typeof rows)[number]) =>
+      ["prior_auth", "benefit_verification", "blocked"].includes(row.status)
+    ).length;
+
     return {
-      metrics: [
-        {
-          label: "Case exports available",
-          value: String(rows.length),
-          note: "Rows included in the submission export generated from the current organization."
-        },
-        ...demoReports.metrics.slice(1)
-      ],
-      rows: rows.length > 0 ? rows : demoReports.rows
+      metrics: isDoctor
+        ? [
+            {
+              label: "Assigned case rows",
+              value: String(rows.length),
+              note: "Rows in your doctor report export, limited to patients assigned to you."
+            },
+            {
+              label: "Need doctor review",
+              value: String(reviewRows),
+              note: "Assigned cases sitting in benefit verification, prior auth, or blocked states."
+            },
+            {
+              label: "Critical assigned cases",
+              value: String(criticalRows),
+              note: "Assigned patients currently marked critical."
+            }
+          ]
+        : [
+            {
+              label: "Case exports available",
+              value: String(rows.length),
+              note: "Rows included in the submission export generated from the current organization."
+            },
+            ...demoReports.metrics.slice(1)
+          ],
+      rows: rows.length > 0 ? rows : isDoctor ? [] : demoReports.rows
     };
   } catch {
-    return demoReports;
+    return actor?.role === "provider" ? createEmptyDoctorReports() : demoReports;
   }
 }
 
@@ -90,4 +118,27 @@ export function convertReportsToCsv(snapshot: ReportsSnapshot) {
         .join(",")
     )
     .join("\n");
+}
+
+function createEmptyDoctorReports(): ReportsSnapshot {
+  return {
+    metrics: [
+      {
+        label: "Assigned case rows",
+        value: "0",
+        note: "Rows in your doctor report export, limited to patients assigned to you."
+      },
+      {
+        label: "Need doctor review",
+        value: "0",
+        note: "Assigned cases sitting in benefit verification, prior auth, or blocked states."
+      },
+      {
+        label: "Critical assigned cases",
+        value: "0",
+        note: "Assigned patients currently marked critical."
+      }
+    ],
+    rows: []
+  };
 }

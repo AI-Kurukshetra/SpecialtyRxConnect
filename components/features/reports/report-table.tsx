@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { ReportsSnapshot } from "@/types/workspace";
 
 type ReportTableProps = {
@@ -6,6 +7,15 @@ type ReportTableProps = {
 };
 
 export function ReportTable({ snapshot }: ReportTableProps) {
+  if (snapshot.rows.length === 0) {
+    return (
+      <EmptyState
+        description="No report rows are available for this role yet."
+        title="Nothing to export"
+      />
+    );
+  }
+
   return (
     <Card className="overflow-hidden">
       <div className="overflow-x-auto">

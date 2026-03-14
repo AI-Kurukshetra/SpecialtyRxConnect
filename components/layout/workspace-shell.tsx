@@ -16,6 +16,31 @@ const baseNavItems = [
   { href: "/help", label: "Help" }
 ] satisfies Array<{ href: Route; label: string }>;
 
+const doctorNavItems = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/patients", label: "Assigned patients" },
+  { href: "/reports", label: "Reports" },
+  { href: "/profile", label: "Profile" }
+] satisfies Array<{ href: Route; label: string }>;
+
+const adminNavItems = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/users", label: "Users" },
+  { href: "/insurance", label: "Insurance" },
+  { href: "/medications", label: "Medications" },
+  { href: "/reports", label: "Reports" },
+  { href: "/profile", label: "Profile" },
+  { href: "/admin", label: "Access" }
+] satisfies Array<{ href: Route; label: string }>;
+
+const patientNavItems = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/claims", label: "Claims" },
+  { href: "/reports", label: "Reports" },
+  { href: "/profile", label: "Profile" },
+  { href: "/help", label: "Help" }
+] satisfies Array<{ href: Route; label: string }>;
+
 type WorkspaceShellProps = {
   viewer: ViewerContext;
   pathname: string;
@@ -33,8 +58,12 @@ export function WorkspaceShell({
 
   const navItems =
     viewer.role === "admin"
-      ? [...baseNavItems, { href: "/admin", label: "Admin" }]
-      : baseNavItems;
+      ? adminNavItems
+      : viewer.role === "patient"
+        ? patientNavItems
+        : viewer.role === "provider"
+        ? doctorNavItems
+        : baseNavItems;
 
   return (
     <main className="page-shell">
