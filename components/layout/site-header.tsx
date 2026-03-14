@@ -2,6 +2,7 @@ import type { Route } from "next";
 import Link from "next/link";
 import { cn } from "@/utils/cn";
 import { buttonStyles } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 
 type NavItem = {
   href: Route;
@@ -30,7 +31,9 @@ export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
         </div>
       </Link>
 
-      <nav className="flex flex-wrap gap-2" aria-label="Primary">
+      <div className="flex items-center gap-3">
+        <ThemeToggle />
+        <nav className="flex flex-wrap gap-2" aria-label="Primary">
         {navItems.map((item) => (
           <Link
             className={cn(
@@ -44,6 +47,7 @@ export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
           </Link>
         ))}
         </nav>
+      </div>
     </header>
   );
 }
