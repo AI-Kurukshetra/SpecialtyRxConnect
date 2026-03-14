@@ -1,6 +1,7 @@
 import type { Route } from "next";
 import Link from "next/link";
 import { signOutAction } from "@/app/login/actions";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
@@ -67,6 +68,7 @@ export function WorkspaceShell({
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className="text-right">
               <div className="text-sm font-medium text-slate-900">
                 {viewer.displayName}

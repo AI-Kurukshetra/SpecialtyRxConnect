@@ -14,10 +14,18 @@
   }
 
   body {
-    @apply bg-mist text-ink antialiased;
+    @apply antialiased;
+    background-color: var(--bg-page);
+    color: var(--text-primary);
     background-image:
-      radial-gradient(circle at top, rgba(37, 99, 235, 0.08), transparent 28%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 1));
+      radial-gradient(circle at top, rgba(56, 130, 246, 0.18), transparent 32%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.97), var(--bg-page));
+  }
+
+  :root.dark body {
+    background-image:
+      radial-gradient(circle at top, rgba(69, 132, 255, 0.24), transparent 34%),
+      linear-gradient(180deg, #07162f, var(--bg-page));
   }
 
   a {
@@ -39,11 +47,15 @@
   }
 
   .panel {
-    @apply rounded-3xl border border-slate-200/80 bg-white/90 shadow-panel backdrop-blur;
+    @apply rounded-3xl shadow-panel backdrop-blur;
+    border: 1px solid color-mix(in oklab, var(--line), transparent 12%);
+    background: var(--bg-panel);
   }
 
   .panel-muted {
-    @apply rounded-3xl border border-slate-200/70 bg-slate-50/80;
+    @apply rounded-3xl;
+    border: 1px solid color-mix(in oklab, var(--line), transparent 24%);
+    background: var(--bg-panel-muted);
   }
 
   .muted-copy {
@@ -55,7 +67,7 @@
   }
 
   .surface-border {
-    @apply border border-slate-200/80;
+    border: 1px solid color-mix(in oklab, var(--line), transparent 12%);
   }
 
   .workspace-grid {
@@ -76,5 +88,53 @@
 
   .section-stack {
     @apply flex flex-col gap-6;
+  }
+}
+
+@layer base {
+  :root.dark .bg-white,
+  :root.dark .bg-white\/90,
+  :root.dark .bg-slate-50,
+  :root.dark .bg-slate-50\/80,
+  :root.dark .bg-slate-100 {
+    background-color: var(--bg-soft) !important;
+  }
+
+  :root.dark .text-slate-950,
+  :root.dark .text-slate-900,
+  :root.dark .text-slate-800,
+  :root.dark .text-ink {
+    color: var(--text-primary) !important;
+  }
+
+  :root.dark .text-slate-700,
+  :root.dark .text-slate-600,
+  :root.dark .text-slate-500,
+  :root.dark .text-slate-400 {
+    color: var(--text-secondary) !important;
+  }
+
+  :root.dark .border-slate-300,
+  :root.dark .border-slate-200,
+  :root.dark .border-slate-200\/80,
+  :root.dark .border-slate-200\/70,
+  :root.dark .border-line {
+    border-color: var(--line) !important;
+  }
+
+  :root.dark .bg-ink {
+    background-color: #143d78 !important;
+  }
+
+  :root.dark .hover\:bg-slate-50:hover,
+  :root.dark .hover\:bg-slate-100:hover,
+  :root.dark .hover\:bg-slate-200:hover,
+  :root.dark .hover\:bg-slate-800:hover {
+    background-color: #173560 !important;
+  }
+
+  :root.dark .focus-visible\:ring-brand\/20:focus-visible,
+  :root.dark .focus\:ring-brand\/10:focus {
+    --tw-ring-color: var(--focus-ring) !important;
   }
 }

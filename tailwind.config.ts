@@ -26,12 +26,10 @@ const config: Config = {
         display: ["var(--font-display)"]
       },
       boxShadow: {
-        panel:
-          "0 20px 45px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.04)"
+        panel: "var(--shadow-panel)"
       },
       backgroundImage: {
-        "hero-grid":
-          "linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px)"
+        "hero-grid": "var(--hero-grid)"
       }
     }
   },

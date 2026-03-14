@@ -1,5 +1,6 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { cn } from "@/utils/cn";
 import { buttonStyles } from "@/components/ui/button";
 
@@ -30,7 +31,9 @@ export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
         </div>
       </Link>
 
-      <nav className="flex flex-wrap gap-2" aria-label="Primary">
+      <div className="flex flex-wrap items-center gap-2">
+        <ThemeToggle />
+        <nav className="flex flex-wrap gap-2" aria-label="Primary">
         {navItems.map((item) => (
           <Link
             className={cn(
@@ -43,7 +46,8 @@ export function SiteHeader({ navItems, currentPath }: SiteHeaderProps) {
             {item.label}
           </Link>
         ))}
-      </nav>
+        </nav>
+      </div>
     </header>
   );
 }

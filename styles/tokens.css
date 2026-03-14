@@ -1,3 +1,33 @@
 :root {
   color-scheme: light;
+  --bg-page: #f8fafc;
+  --bg-panel: rgba(255, 255, 255, 0.9);
+  --bg-panel-muted: rgba(248, 250, 252, 0.8);
+  --bg-soft: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --line: #e2e8f0;
+  --line-strong: #cbd5e1;
+  --focus-ring: rgba(37, 99, 235, 0.18);
+  --shadow-panel: 0 20px 45px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.04);
+  --hero-grid: linear-gradient(to right, rgba(15, 23, 42, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.06) 1px, transparent 1px);
+}
+
+:root.dark {
+  color-scheme: dark;
+  --bg-page: #061228;
+  --bg-panel: rgba(11, 27, 56, 0.9);
+  --bg-panel-muted: rgba(13, 35, 70, 0.82);
+  --bg-soft: #102849;
+  --text-primary: #e4eeff;
+  --text-secondary: #bdd1f3;
+  --text-muted: #95aed8;
+  --line: #1f3b66;
+  --line-strong: #2f578e;
+  --focus-ring: rgba(125, 175, 255, 0.22);
+  --shadow-panel: 0 24px 50px rgba(3, 9, 21, 0.58), 0 8px 20px rgba(3, 9, 21, 0.42);
+  --hero-grid: linear-gradient(to right, rgba(173, 201, 250, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(173, 201, 250, 0.1) 1px, transparent 1px);
 }
