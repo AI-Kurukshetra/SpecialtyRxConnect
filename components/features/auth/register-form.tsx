@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
@@ -23,41 +23,42 @@ export function RegisterForm() {
   const roleDetail = registerRoleDetails[selectedRole];
 
   return (
-    <Card className="register-card relative overflow-hidden border-slate-200/90 bg-white/95 p-6 sm:p-8">
-      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
-      <span className="eyebrow">External registration</span>
-      <h1 className="mt-3 max-w-xl font-display text-4xl tracking-tight text-slate-950 sm:text-5xl">
+    <Card className="register-card register-surface relative overflow-hidden p-6 sm:p-8">
+      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
+      <span className="eyebrow register-kicker">External registration</span>
+      <h1 className="register-heading mt-3 max-w-xl font-display text-4xl tracking-tight sm:text-5xl">
         Open a live workspace without waiting for manual provisioning.
       </h1>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+      <p className="register-body mt-4 max-w-2xl text-sm leading-7 sm:text-base">
         Choose the role you need, create the organization shell, and land in a
         seeded workspace with matching operational records.
       </p>
 
-      <div className="mt-6 rounded-[28px] border border-slate-200 bg-slate-50/85 p-5">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+      <div className="register-subtle-surface mt-6 rounded-[28px] p-5">
+        <div className="register-kicker text-[11px] uppercase tracking-[0.28em]">
           Selected role
         </div>
-        <div className="mt-2 font-display text-2xl tracking-tight text-slate-950">
+        <div className="register-heading mt-2 font-display text-2xl tracking-tight">
           {roleDetail.label}
         </div>
-        <p className="mt-2 text-sm leading-7 text-slate-600">{roleDetail.description}</p>
+        <p className="register-body mt-2 text-sm leading-7">{roleDetail.description}</p>
       </div>
 
       <form action={formAction} className="mt-8 space-y-5">
         <div className="grid gap-4 md:grid-cols-2">
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="fullName">
+            <label className="register-field-label text-sm font-medium" htmlFor="fullName">
               Full name
             </label>
-            <Input id="fullName" name="fullName" placeholder="Maya Chen" />
+            <Input className="register-field" id="fullName" name="fullName" placeholder="Maya Chen" />
           </div>
 
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="organizationName">
+            <label className="register-field-label text-sm font-medium" htmlFor="organizationName">
               Organization
             </label>
             <Input
+              className="register-field"
               id="organizationName"
               name="organizationName"
               placeholder="Northstar Specialty Care"
@@ -67,10 +68,11 @@ export function RegisterForm() {
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="role">
+            <label className="register-field-label text-sm font-medium" htmlFor="role">
               Role
             </label>
             <Select
+              className="register-field"
               id="role"
               name="role"
               onChange={(event) => setSelectedRole(event.target.value as RegisterRole)}
@@ -85,43 +87,55 @@ export function RegisterForm() {
           </div>
 
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="phone">
+            <label className="register-field-label text-sm font-medium" htmlFor="phone">
               Phone
             </label>
-            <Input id="phone" name="phone" placeholder="(555) 100-1001" />
+            <Input
+              className="register-field"
+              id="phone"
+              name="phone"
+              placeholder="(555) 100-1001"
+            />
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="email">
+            <label className="register-field-label text-sm font-medium" htmlFor="email">
               Email
             </label>
-            <Input id="email" name="email" placeholder="name@clinic.com" type="email" />
+            <Input
+              className="register-field"
+              id="email"
+              name="email"
+              placeholder="name@clinic.com"
+              type="email"
+            />
           </div>
 
           <div className="form-field">
-            <label className="text-sm font-medium text-slate-800" htmlFor="password">
+            <label className="register-field-label text-sm font-medium" htmlFor="password">
               Password
             </label>
-            <Input id="password" name="password" type="password" />
+            <Input className="register-field" id="password" name="password" type="password" />
           </div>
         </div>
 
         {selectedRole === "provider" ? (
           <div className="grid gap-4 md:grid-cols-3">
             <div className="form-field md:col-span-1">
-              <label className="text-sm font-medium text-slate-800" htmlFor="specialty">
+              <label className="register-field-label text-sm font-medium" htmlFor="specialty">
                 Specialty
               </label>
-              <Input id="specialty" name="specialty" placeholder="Pulmonology" />
+              <Input className="register-field" id="specialty" name="specialty" placeholder="Pulmonology" />
             </div>
 
             <div className="form-field md:col-span-1">
-              <label className="text-sm font-medium text-slate-800" htmlFor="practiceName">
+              <label className="register-field-label text-sm font-medium" htmlFor="practiceName">
                 Practice
               </label>
               <Input
+                className="register-field"
                 id="practiceName"
                 name="practiceName"
                 placeholder="Lakeview Respiratory Partners"
@@ -129,10 +143,10 @@ export function RegisterForm() {
             </div>
 
             <div className="form-field md:col-span-1">
-              <label className="text-sm font-medium text-slate-800" htmlFor="providerNpi">
+              <label className="register-field-label text-sm font-medium" htmlFor="providerNpi">
                 NPI
               </label>
-              <Input id="providerNpi" name="providerNpi" placeholder="1234567890" />
+              <Input className="register-field" id="providerNpi" name="providerNpi" placeholder="1234567890" />
             </div>
           </div>
         ) : null}
@@ -143,10 +157,10 @@ export function RegisterForm() {
           </div>
         ) : null}
 
-        <div className="flex flex-col gap-3 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="text-sm leading-7 text-slate-600">
+        <div className="register-divider flex flex-col gap-3 border-t pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="register-body text-sm leading-7">
             Already provisioned?{" "}
-            <Link className="font-medium text-slate-900 underline" href="/login">
+            <Link className="register-link font-medium underline" href="/login">
               Sign in here
             </Link>
             .

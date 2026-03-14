@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans, Newsreader } from "next/font/google";
 import "./globals.css";
+import { AppLoader } from "@/components/layout/app-loader";
 
 const bodyFont = IBM_Plex_Sans({
   subsets: ["latin"],
@@ -73,6 +74,7 @@ export default function RootLayout({
         className={`${bodyFont.variable} ${displayFont.variable}`}
       >
         {children}
+        <AppLoader />
       </body>
     </html>
   );
