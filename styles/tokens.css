@@ -17,17 +17,17 @@
 
 :root.dark {
   color-scheme: dark;
-  --bg-page: #061228;
-  --bg-panel: rgba(11, 27, 56, 0.9);
-  --bg-panel-muted: rgba(13, 35, 70, 0.82);
-  --bg-soft: #102849;
-  --text-primary: #e4eeff;
-  --text-secondary: #bdd1f3;
-  --text-muted: #95aed8;
-  --line: #1f3b66;
-  --line-strong: #2f578e;
-  --focus-ring: rgba(125, 175, 255, 0.22);
-  --shadow-panel: 0 24px 50px rgba(3, 9, 21, 0.58), 0 8px 20px rgba(3, 9, 21, 0.42);
-  --hero-grid: linear-gradient(to right, rgba(173, 201, 250, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(173, 201, 250, 0.1) 1px, transparent 1px);
+  --bg-page: #030913;
+  --bg-panel: rgba(6, 16, 34, 0.92);
+  --bg-panel-muted: rgba(8, 20, 41, 0.86);
+  --bg-soft: #0b1a34;
+  --text-primary: #e6eeff;
+  --text-secondary: #b7c7e8;
+  --text-muted: #8ea4cf;
+  --line: #13284a;
+  --line-strong: #1d3a67;
+  --focus-ring: rgba(118, 163, 255, 0.24);
+  --shadow-panel: 0 30px 56px rgba(1, 5, 12, 0.72), 0 10px 24px rgba(1, 5, 12, 0.58);
+  --hero-grid: linear-gradient(to right, rgba(149, 178, 232, 0.09) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(149, 178, 232, 0.09) 1px, transparent 1px);
 }

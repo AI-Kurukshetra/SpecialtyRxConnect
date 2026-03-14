@@ -57,7 +57,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${bodyFont.variable} ${displayFont.variable} bg-mist text-ink`}
+        className={`${bodyFont.variable} ${displayFont.variable}`}
       >
         {children}
       </body>

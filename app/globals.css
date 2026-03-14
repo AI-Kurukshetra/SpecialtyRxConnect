@@ -24,8 +24,8 @@
 
   :root.dark body {
     background-image:
-      radial-gradient(circle at top, rgba(69, 132, 255, 0.24), transparent 34%),
-      linear-gradient(180deg, #07162f, var(--bg-page));
+      radial-gradient(circle at top, rgba(58, 106, 198, 0.2), transparent 36%),
+      linear-gradient(180deg, #040d1d, var(--bg-page));
   }
 
   a {
@@ -123,18 +123,26 @@
   }
 
   :root.dark .bg-ink {
-    background-color: #143d78 !important;
+    background-color: #0c2244 !important;
   }
 
   :root.dark .hover\:bg-slate-50:hover,
   :root.dark .hover\:bg-slate-100:hover,
   :root.dark .hover\:bg-slate-200:hover,
   :root.dark .hover\:bg-slate-800:hover {
-    background-color: #173560 !important;
+    background-color: #0f2444 !important;
   }
 
   :root.dark .focus-visible\:ring-brand\/20:focus-visible,
   :root.dark .focus\:ring-brand\/10:focus {
     --tw-ring-color: var(--focus-ring) !important;
+  }
+
+  :root.dark .register-card :is(.text-slate-950, .text-slate-900, .text-slate-800) {
+    color: var(--text-primary) !important;
+  }
+
+  :root.dark .register-card :is(.text-slate-700, .text-slate-600, .text-slate-500, .text-slate-400) {
+    color: var(--text-secondary) !important;
   }
 }

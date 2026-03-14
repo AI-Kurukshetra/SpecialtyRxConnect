@@ -23,7 +23,7 @@ export function RegisterForm() {
   const roleDetail = registerRoleDetails[selectedRole];
 
   return (
-    <Card className="relative overflow-hidden border-slate-200/90 bg-white/95 p-6 sm:p-8">
+    <Card className="register-card relative overflow-hidden border-slate-200/90 bg-white/95 p-6 sm:p-8">
       <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
       <span className="eyebrow">External registration</span>
       <h1 className="mt-3 max-w-xl font-display text-4xl tracking-tight text-slate-950 sm:text-5xl">
