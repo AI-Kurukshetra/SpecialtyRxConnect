@@ -55,6 +55,19 @@ export default function RootLayout({
             `
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var attrs = ['data-new-gr-c-s-check-loaded', 'data-gr-ext-installed'];
+                attrs.forEach(function(attr) {
+                  document.documentElement.removeAttribute(attr);
+                  document.body && document.body.removeAttribute(attr);
+                });
+              })();
+            `
+          }}
+        />
       </head>
       <body
         className={`${bodyFont.variable} ${displayFont.variable}`}
