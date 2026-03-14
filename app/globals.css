@@ -24,8 +24,8 @@
 
   :root.dark body {
     background-image:
-      radial-gradient(circle at top, rgba(58, 106, 198, 0.2), transparent 36%),
-      linear-gradient(180deg, #040d1d, var(--bg-page));
+      radial-gradient(circle at top, rgba(58, 106, 198, 0.28), transparent 36%),
+      linear-gradient(180deg, rgba(1, 5, 15, 0.96), var(--bg-page));
   }
 
   a {
@@ -187,24 +187,24 @@
   }
 }
 
-  @layer utilities {
-    .app-loader {
-      position: fixed;
+@layer utilities {
+  .app-loader {
+    position: fixed;
     inset: 0;
     z-index: 60;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(3, 6, 17, 0.85);
-    backdrop-filter: blur(6px);
+    background-color: rgba(1, 5, 17, 0.86);
+    backdrop-filter: blur(12px);
   }
 
   .app-loader__spinner {
-    width: 56px;
-    height: 56px;
+    width: 60px;
+    height: 60px;
     border-radius: 999px;
     border: 4px solid rgba(255, 255, 255, 0.15);
-    border-top-color: #5f99ff;
+    border-top-color: #6b8bff;
     animation: ring-spin 1s linear infinite;
   }
 
@@ -216,7 +216,13 @@
 }
 
 #next-logo,
-#next-logo * {
+#next-logo *,
+#__next-dev-root,
+#__next-dev-root *,
+#__next-dev,
+#__next-dev *,
+#__next-dev-overlay,
+#__next-dev-overlay * {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;

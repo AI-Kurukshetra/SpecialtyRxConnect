@@ -57,7 +57,11 @@ export function ThemeToggle() {
   return (
     <button
       aria-label="Toggle theme"
-      className="rounded-full border border-slate-200 bg-white/80 p-2 text-slate-900 shadow-sm transition hover:border-slate-300 dark:border-slate-700 dark:bg-black/60 dark:text-slate-100"
+      className={`rounded-full border px-3 py-2 text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 ${
+        mode === "dark"
+          ? "border-slate-700 bg-slate-900 text-slate-100 shadow-md"
+          : "border-slate-200 bg-white/90 text-slate-900 shadow-sm"
+      }`}
       type="button"
       onClick={onToggle}
     >
@@ -67,8 +71,13 @@ export function ThemeToggle() {
 }
 
 function applyMode(value: ThemeMode) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
   const root = document.documentElement;
   root.classList.toggle("dark", value === "dark");
+  root.dataset.theme = value;
   root.style.colorScheme = value;
   localStorage.setItem("theme", value);
 }

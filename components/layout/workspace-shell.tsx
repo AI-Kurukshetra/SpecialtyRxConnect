@@ -1,12 +1,14 @@
 import type { Route } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { signOutAction } from "@/app/login/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/utils/cn";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import type { ViewerContext } from "@/types/workspace";
 
-const navItems = [
+const baseNavItems = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/patients", label: "Patients" },
   { href: "/reports", label: "Reports" },
@@ -25,6 +27,15 @@ export function WorkspaceShell({
   pathname,
   children
 }: WorkspaceShellProps) {
+  if (!viewer.hasSession) {
+    redirect("/login");
+  }
+
+  const navItems =
+    viewer.role === "admin"
+      ? [...baseNavItems, { href: "/admin", label: "Admin" }]
+      : baseNavItems;
+
   return (
     <main className="page-shell">
       <div className="content-shell">
@@ -45,7 +56,7 @@ export function WorkspaceShell({
             </Link>
 
             <Badge tone={viewer.mode === "live" ? "accent" : "default"}>
-              {viewer.mode === "live" ? "Live workspace" : "Preview workspace"}
+              {viewer.mode === "live" ? "Live workspace" : "Workspace"}
             </Badge>
           </div>
 
@@ -67,6 +78,7 @@ export function WorkspaceShell({
           </nav>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <div className="text-right">
               <div className="text-sm font-medium text-slate-900">
                 {viewer.displayName}

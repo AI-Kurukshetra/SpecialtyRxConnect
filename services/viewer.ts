@@ -1,8 +1,10 @@
 import { cache } from "react";
+import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { hasPublicSupabaseEnv } from "@/lib/env";
 import { demoViewer } from "@/services/demo-data";
 import type { ViewerContext } from "@/types/workspace";
+import { isRegisterRole } from "@/lib/auth/register";
 
 export const getViewerContext = cache(async (): Promise<ViewerContext> => {
   if (!hasPublicSupabaseEnv()) {
@@ -34,9 +36,13 @@ export const getViewerContext = cache(async (): Promise<ViewerContext> => {
           .maybeSingle()
       : { data: null };
 
+    const rawRole = profile?.role ?? "";
+    const role = isRegisterRole(rawRole) ? rawRole : "staff";
+
     return {
       displayName: profile?.full_name ?? session.user.email ?? "Workspace user",
-      roleLabel: (profile?.role ?? "staff").replaceAll("_", " "),
+      role,
+      roleLabel: role.replaceAll("_", " "),
       organizationName: organization?.name ?? "SpecialtyRx Organization",
       mode: profile?.organization_id ? "live" : "demo",
       hasSession: true
@@ -44,4 +50,14 @@ export const getViewerContext = cache(async (): Promise<ViewerContext> => {
   } catch {
     return demoViewer;
   }
+});
+
+export const requireViewerContext = cache(async (): Promise<ViewerContext> => {
+  const viewer = await getViewerContext();
+
+  if (!viewer.hasSession) {
+    redirect("/login");
+  }
+
+  return viewer;
 });

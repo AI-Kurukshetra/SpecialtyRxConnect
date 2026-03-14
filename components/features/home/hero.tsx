@@ -20,11 +20,8 @@ export function Hero() {
           <Link href="/register">
             <Button>Create live account</Button>
           </Link>
-          <Link href="/intake">
-            <Button variant="secondary">Open enrollment portal</Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button variant="ghost">Open provider workspace</Button>
+          <Link href="/login">
+            <Button variant="secondary">Sign in</Button>
           </Link>
         </div>
       </div>

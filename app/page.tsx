@@ -33,8 +33,6 @@ export default function HomePage() {
           currentPath="/"
           navItems={[
             { href: "/", label: "Overview" },
-            { href: "/intake", label: "Enrollment" },
-            { href: "/dashboard", label: "Workspace" },
             { href: "/login", label: "Login" },
             { href: "/register", label: "Register" }
           ]}
@@ -109,12 +107,12 @@ export default function HomePage() {
           <div className="max-w-2xl">
             <span className="eyebrow">Ready to explore</span>
             <h2 className="mt-3 font-display text-4xl tracking-tight text-slate-950">
-              Open the workspace or test the enrollment flow.
+              Create the admin account and start onboarding your team.
             </h2>
             <p className="mt-3 text-sm leading-7 text-slate-600">
-              The application renders with preview data by default and switches
-              to live Supabase records when auth and environment variables are in
-              place.
+              Registration creates the first administrator. After sign-in, that
+              admin can invite providers, case managers, and staff into the live
+              workspace.
             </p>
           </div>
 
@@ -122,11 +120,8 @@ export default function HomePage() {
             <Link href="/register">
               <Button>Create live account</Button>
             </Link>
-            <Link href="/dashboard">
-              <Button variant="secondary">Workspace preview</Button>
-            </Link>
-            <Link href="/intake">
-              <Button variant="ghost">Enrollment portal</Button>
+            <Link href="/login">
+              <Button variant="secondary">Sign in</Button>
             </Link>
           </div>
         </Card>

@@ -3,10 +3,10 @@ import { PageIntro } from "@/components/layout/page-intro";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { Card } from "@/components/ui/card";
 import { helpTopics } from "@/services/demo-data";
-import { getViewerContext } from "@/services/viewer";
+import { requireViewerContext } from "@/services/viewer";
 
 export default async function HelpPage() {
-  const viewer = await getViewerContext();
+  const viewer = await requireViewerContext();
 
   return (
     <WorkspaceShell pathname="/help" viewer={viewer}>

@@ -1,9 +1,16 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/features/auth/login-form";
 import { SiteHeader } from "@/components/layout/site-header";
 import { Button } from "@/components/ui/button";
+import { getViewerContext } from "@/services/viewer";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const viewer = await getViewerContext();
+  if (viewer.hasSession) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="page-shell">
       <div className="content-shell">
@@ -11,8 +18,6 @@ export default function LoginPage() {
           currentPath="/login"
           navItems={[
             { href: "/", label: "Overview" },
-            { href: "/intake", label: "Enrollment" },
-            { href: "/dashboard", label: "Workspace" },
             { href: "/login", label: "Login" },
             { href: "/register", label: "Register" }
           ]}
@@ -22,20 +27,16 @@ export default function LoginPage() {
           <div>
             <span className="eyebrow">Workspace access</span>
             <h1 className="mt-3 max-w-3xl font-display text-5xl tracking-tight text-slate-950 sm:text-6xl">
-              Sign in when live auth is ready. Preview the product before that.
+              Sign in to access the live workspace.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-8 text-slate-600">
-              The application supports Supabase authentication with self-service
-              registration, but it also keeps the core UI reviewable in preview
-              mode so product, design, and data modeling can move before identity
-              provisioning is complete.
+              Authentication is required for dashboard, patients, intake, and
+              admin controls. Create the administrator account first if your
+              organization has not been provisioned yet.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/register">
                 <Button>Create account</Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="secondary">Open preview workspace</Button>
               </Link>
             </div>
           </div>

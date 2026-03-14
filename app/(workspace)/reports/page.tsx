@@ -5,15 +5,13 @@ import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { MetricCard } from "@/components/ui/metric-card";
 import { getReportsSnapshot } from "@/services/reports";
-import { getViewerContext } from "@/services/viewer";
+import { requireViewerContext } from "@/services/viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
-  const [viewer, snapshot] = await Promise.all([
-    getViewerContext(),
-    getReportsSnapshot()
-  ]);
+  const viewer = await requireViewerContext();
+  const snapshot = await getReportsSnapshot();
 
   return (
     <WorkspaceShell pathname="/reports" viewer={viewer}>

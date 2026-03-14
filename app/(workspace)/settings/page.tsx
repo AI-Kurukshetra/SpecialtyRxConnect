@@ -1,14 +1,13 @@
 import { SettingsPanels } from "@/components/features/settings/settings-panels";
+import { RolePrivileges } from "@/components/features/permissions/role-privileges";
 import { PageIntro } from "@/components/layout/page-intro";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { getSettingsSnapshot } from "@/services/settings";
-import { getViewerContext } from "@/services/viewer";
+import { requireViewerContext } from "@/services/viewer";
 
 export default async function SettingsPage() {
-  const [viewer, snapshot] = await Promise.all([
-    getViewerContext(),
-    getSettingsSnapshot()
-  ]);
+  const viewer = await requireViewerContext();
+  const snapshot = await getSettingsSnapshot();
 
   return (
     <WorkspaceShell pathname="/settings" viewer={viewer}>
@@ -18,6 +17,7 @@ export default async function SettingsPage() {
         title="Workflow preferences"
       />
       <SettingsPanels snapshot={snapshot} />
+      <RolePrivileges role={viewer.role} />
     </WorkspaceShell>
   );
 }

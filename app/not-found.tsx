@@ -11,14 +11,17 @@ export default function NotFound() {
             The page or case you requested is not available.
           </h1>
           <p className="mt-4 text-sm leading-7 text-slate-600">
-            Return to the workspace overview or the enrollment portal.
+            Return to the main overview, sign in, or create the administrator account.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/dashboard">
-              <Button>Open dashboard</Button>
+            <Link href="/">
+              <Button>Open overview</Button>
             </Link>
-            <Link href="/intake">
-              <Button variant="secondary">Open intake</Button>
+            <Link href="/login">
+              <Button variant="secondary">Sign in</Button>
+            </Link>
+            <Link href="/register">
+              <Button variant="ghost">Create account</Button>
             </Link>
           </div>
         </div>

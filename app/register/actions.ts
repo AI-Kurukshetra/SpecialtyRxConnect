@@ -1,7 +1,6 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { isRegisterRole } from "@/lib/auth/register";
 import {
   createServerSupabaseClient,
   createServiceSupabaseClient
@@ -31,22 +30,12 @@ export async function registerAction(
   const password = String(formData.get("password") ?? "").trim();
   const organizationName = String(formData.get("organizationName") ?? "").trim();
   const phone = readOptionalValue(formData, "phone");
-  const practiceName = readOptionalValue(formData, "practiceName");
-  const providerNpi = readOptionalValue(formData, "providerNpi");
-  const specialty = readOptionalValue(formData, "specialty");
-  const selectedRole = String(formData.get("role") ?? "").trim();
+  const selectedRole = "admin";
 
-  if (!fullName || !email || !password || !organizationName || !selectedRole) {
+  if (!fullName || !email || !password || !organizationName) {
     return {
       status: "error",
-      message: "Full name, organization, role, email, and password are required."
-    };
-  }
-
-  if (!isRegisterRole(selectedRole)) {
-    return {
-      status: "error",
-      message: "Select a valid workspace role."
+      message: "Full name, organization, email, and password are required."
     };
   }
 
@@ -54,13 +43,6 @@ export async function registerAction(
     return {
       status: "error",
       message: "Password must be at least 8 characters."
-    };
-  }
-
-  if (selectedRole === "provider" && (!practiceName || !specialty)) {
-    return {
-      status: "error",
-      message: "Providers need a practice name and specialty."
     };
   }
 
@@ -114,10 +96,7 @@ export async function registerAction(
       fullName,
       organizationName,
       phone,
-      practiceName,
-      providerNpi,
       role: selectedRole,
-      specialty,
       userId: data.user.id
     });
   } catch (error) {

@@ -1,62 +1,55 @@
 import Link from "next/link";
-import { EnrollmentForm } from "@/components/features/intake/enrollment-form";
-import { SiteHeader } from "@/components/layout/site-header";
+import { PatientRegistrationForm } from "@/components/features/intake/patient-registration-form";
+import { PageIntro } from "@/components/layout/page-intro";
+import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { requireViewerContext } from "@/services/viewer";
 
-export default function IntakePage() {
+export const dynamic = "force-dynamic";
+
+export default async function IntakePage() {
+  const viewer = await requireViewerContext();
+
   return (
-    <main className="page-shell">
-      <div className="content-shell">
-        <SiteHeader
-          currentPath="/intake"
-          navItems={[
-            { href: "/", label: "Overview" },
-            { href: "/intake", label: "Enrollment" },
-            { href: "/dashboard", label: "Workspace" },
-            { href: "/login", label: "Login" },
-            { href: "/register", label: "Register" }
-          ]}
-        />
+    <WorkspaceShell pathname="/intake" viewer={viewer}>
+      <PageIntro
+        eyebrow="Patient registration"
+        title="Register patients inside the workspace"
+        description="Authenticated admins, providers, and case managers add new patients, prescriptions, and cases without leaving their workspace."
+        action={
+          <Link href="/patients">
+            <Button variant="secondary">Open patient queue</Button>
+          </Link>
+        }
+      />
 
-        <section className="grid gap-6 xl:grid-cols-[1.15fr_minmax(0,0.8fr)]">
-          <EnrollmentForm />
+      <section className="section-stack">
+        <PatientRegistrationForm />
 
-          <div className="section-stack">
-            <Card className="p-6">
-              <span className="eyebrow">Why this flow</span>
-              <h2 className="mt-3 font-display text-3xl tracking-tight text-slate-950">
-                Structured enough for access teams, simple enough for rapid intake.
-              </h2>
-              <p className="mt-4 text-sm leading-7 text-slate-600">
-                The form captures the therapy, payer, and patient context needed
-                to start benefits investigation, prior authorization, and
-                affordability work without forcing a multi-page referral maze.
-              </p>
-            </Card>
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="p-6">
+            <span className="eyebrow">Visibility</span>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              Registered patients show up immediately across the dashboard, reports, and communications timelines.
+            </p>
+          </Card>
 
-            <Card className="p-6">
-              <span className="eyebrow">Routing outcome</span>
-              <ul className="mt-4 space-y-4 text-sm leading-7 text-slate-600">
-                <li>Creates a patient, prescription, insurance policy, and case record when live server credentials are present.</li>
-                <li>Falls back to preview mode when only public credentials are configured.</li>
-                <li>Feeds the same provider workspace used by case managers and access coordinators.</li>
-              </ul>
-            </Card>
+          <Card className="p-6">
+            <span className="eyebrow">Operational data</span>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              The form seeds prescriptions, insurance policies, and cases so benefits investigation can start without manual setup.
+            </p>
+          </Card>
 
-            <Card className="p-6">
-              <span className="eyebrow">Next step</span>
-              <p className="mt-4 text-sm leading-7 text-slate-600">
-                After submission, the case enters the dashboard queue for
-                verification, prior authorization, affordability review, and
-                patient communication.
-              </p>
-              <Link className="mt-4 inline-flex text-sm font-medium text-slate-900 underline" href="/dashboard">
-                View workspace preview
-              </Link>
-            </Card>
-          </div>
-        </section>
-      </div>
-    </main>
+          <Card className="p-6">
+            <span className="eyebrow">Next step</span>
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              After submitting, the case flows into prior authorization, affordability, and pharmacy coordination workstreams.
+            </p>
+          </Card>
+        </div>
+      </section>
+    </WorkspaceShell>
   );
 }

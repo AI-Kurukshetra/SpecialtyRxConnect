@@ -9,6 +9,7 @@ import type {
 
 export const demoViewer: ViewerContext = {
   displayName: "Maya Chen",
+  role: "case_manager",
   roleLabel: "Case manager",
   organizationName: "Northstar Specialty Care",
   mode: "demo",

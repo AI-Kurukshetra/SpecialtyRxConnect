@@ -2,7 +2,7 @@ import { CaseDetailView } from "@/components/features/patients/case-detail-view"
 import { PageIntro } from "@/components/layout/page-intro";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { getCaseDetail } from "@/services/patients";
-import { getViewerContext } from "@/services/viewer";
+import { requireViewerContext } from "@/services/viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -16,10 +16,8 @@ export default async function PatientDetailPage({
   params
 }: PatientDetailPageProps) {
   const resolvedParams = await params;
-  const [viewer, detail] = await Promise.all([
-    getViewerContext(),
-    getCaseDetail(resolvedParams.id)
-  ]);
+  const viewer = await requireViewerContext();
+  const detail = await getCaseDetail(resolvedParams.id);
 
   return (
     <WorkspaceShell pathname="/patients" viewer={viewer}>

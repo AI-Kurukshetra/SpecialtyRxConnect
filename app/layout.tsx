@@ -45,26 +45,13 @@ export default function RootLayout({
               (function() {
                 try {
                   var stored = localStorage.getItem('theme');
-                  var theme = stored === 'dark' || stored === 'light'
-                    ? stored
-                    : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                  var preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  var theme = stored === 'dark' || stored === 'light' ? stored : preferred;
                   var root = document.documentElement;
+                  root.dataset.theme = theme;
                   root.classList.toggle('dark', theme === 'dark');
                   root.style.colorScheme = theme;
                 } catch (e) {}
-              })();
-            `
-          }}
-        />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                var attrs = ['data-new-gr-c-s-check-loaded', 'data-gr-ext-installed'];
-                attrs.forEach(function(attr) {
-                  document.documentElement.removeAttribute(attr);
-                  document.body && document.body.removeAttribute(attr);
-                });
               })();
             `
           }}

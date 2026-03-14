@@ -1,5 +1,8 @@
+import type { RegisterRole } from "@/lib/auth/register";
+
 export type ViewerContext = {
   displayName: string;
+  role: RegisterRole;
   roleLabel: string;
   organizationName: string;
   mode: "demo" | "live";

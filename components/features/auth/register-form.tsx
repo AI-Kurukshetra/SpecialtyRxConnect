@@ -1,24 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { registerAction, type RegisterActionState } from "@/app/register/actions";
-import {
-  registerRoleDetails,
-  registerRoleOptions,
-  type RegisterRole
-} from "@/lib/auth/register";
+import { registerRoleDetails, type RegisterRole } from "@/lib/auth/register";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 
 const initialState: RegisterActionState = {
   status: "idle"
 };
 
 export function RegisterForm() {
-  const [selectedRole, setSelectedRole] = useState<RegisterRole>("admin");
+  const selectedRole: RegisterRole = "admin";
   const [state, formAction, isPending] = useActionState(registerAction, initialState);
   const roleDetail = registerRoleDetails[selectedRole];
 
@@ -27,16 +22,17 @@ export function RegisterForm() {
       <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/70 to-transparent" />
       <span className="eyebrow register-kicker">External registration</span>
       <h1 className="register-heading mt-3 max-w-xl font-display text-4xl tracking-tight sm:text-5xl">
-        Open a live workspace without waiting for manual provisioning.
+        Create your administrator workspace.
       </h1>
       <p className="register-body mt-4 max-w-2xl text-sm leading-7 sm:text-base">
-        Choose the role you need, create the organization shell, and land in a
-        seeded workspace with matching operational records.
+        This form creates the first admin who owns the organization. After signing in, invite
+        other collaborators from the workspace admin console—providers, case managers, and staff
+        gain access through the admin pathway only.
       </p>
 
       <div className="register-subtle-surface mt-6 rounded-[28px] p-5">
         <div className="register-kicker text-[11px] uppercase tracking-[0.28em]">
-          Selected role
+          Workspace admin
         </div>
         <div className="register-heading mt-2 font-display text-2xl tracking-tight">
           {roleDetail.label}
@@ -67,25 +63,6 @@ export function RegisterForm() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-          <div className="form-field">
-            <label className="register-field-label text-sm font-medium" htmlFor="role">
-              Role
-            </label>
-            <Select
-              className="register-field"
-              id="role"
-              name="role"
-              onChange={(event) => setSelectedRole(event.target.value as RegisterRole)}
-              value={selectedRole}
-            >
-              {registerRoleOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </Select>
-          </div>
-
           <div className="form-field">
             <label className="register-field-label text-sm font-medium" htmlFor="phone">
               Phone
@@ -121,36 +98,6 @@ export function RegisterForm() {
           </div>
         </div>
 
-        {selectedRole === "provider" ? (
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="form-field md:col-span-1">
-              <label className="register-field-label text-sm font-medium" htmlFor="specialty">
-                Specialty
-              </label>
-              <Input className="register-field" id="specialty" name="specialty" placeholder="Pulmonology" />
-            </div>
-
-            <div className="form-field md:col-span-1">
-              <label className="register-field-label text-sm font-medium" htmlFor="practiceName">
-                Practice
-              </label>
-              <Input
-                className="register-field"
-                id="practiceName"
-                name="practiceName"
-                placeholder="Lakeview Respiratory Partners"
-              />
-            </div>
-
-            <div className="form-field md:col-span-1">
-              <label className="register-field-label text-sm font-medium" htmlFor="providerNpi">
-                NPI
-              </label>
-              <Input className="register-field" id="providerNpi" name="providerNpi" placeholder="1234567890" />
-            </div>
-          </div>
-        ) : null}
-
         {state.message ? (
           <div className="rounded-[24px] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
             {state.message}
@@ -167,7 +114,7 @@ export function RegisterForm() {
           </div>
 
           <Button className="w-full sm:w-auto" disabled={isPending} type="submit">
-            {isPending ? "Creating account..." : "Create workspace account"}
+            {isPending ? "Creating admin workspace..." : "Create administrator account"}
           </Button>
         </div>
       </form>

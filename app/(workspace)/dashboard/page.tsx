@@ -3,15 +3,13 @@ import { PageIntro } from "@/components/layout/page-intro";
 import { WorkspaceShell } from "@/components/layout/workspace-shell";
 import { Card } from "@/components/ui/card";
 import { getDashboardSnapshot } from "@/services/dashboard";
-import { getViewerContext } from "@/services/viewer";
+import { requireViewerContext } from "@/services/viewer";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [viewer, dashboard] = await Promise.all([
-    getViewerContext(),
-    getDashboardSnapshot()
-  ]);
+  const viewer = await requireViewerContext();
+  const dashboard = await getDashboardSnapshot();
 
   return (
     <WorkspaceShell pathname="/dashboard" viewer={viewer}>

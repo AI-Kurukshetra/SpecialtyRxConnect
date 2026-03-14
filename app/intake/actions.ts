@@ -1,211 +1,233 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-import { createServiceSupabaseClient } from "@/lib/supabase/server";
-import { hasServiceRoleEnv } from "@/lib/env";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { hasPublicSupabaseEnv } from "@/lib/env";
 import type { IntakeActionState } from "@/types/intake";
-
-type LooseQueryResult = {
-  data: Record<string, unknown> | null;
-  error?: {
-    message?: string;
-  } | null;
-};
-
-type LooseSupabaseTable = {
-  select: (...args: unknown[]) => LooseSupabaseTable;
-  insert: (values: Record<string, unknown>) => LooseSupabaseTable;
-  limit: (value: number) => LooseSupabaseTable;
-  maybeSingle: () => Promise<LooseQueryResult>;
-  single: () => Promise<LooseQueryResult>;
-};
-
-type LooseSupabaseClient = {
-  from: (table: string) => LooseSupabaseTable;
-};
 
 function readValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
 }
 
-export async function submitEnrollmentAction(
+export async function submitPatientRegistrationAction(
   _previousState: IntakeActionState,
   formData: FormData
 ): Promise<IntakeActionState> {
-  const patientFullName = readValue(formData, "patientFullName");
-  const phone = readValue(formData, "phone");
-  const medicationName = readValue(formData, "medicationName");
-  const providerName = readValue(formData, "providerName");
-  const payerName = readValue(formData, "payerName");
+  if (!hasPublicSupabaseEnv()) {
+    return {
+      status: "error",
+      message: "Patient registration requires public Supabase credentials."
+    };
+  }
 
-  if (!patientFullName || !phone || !medicationName || !providerName || !payerName) {
+  const patientFullName = readValue(formData, "patientFullName");
+  const medicationName = readValue(formData, "medicationName");
+  const therapyArea = readValue(formData, "therapyArea");
+  const payerName = readValue(formData, "payerName");
+  const providerName = readValue(formData, "providerName");
+  const priority = (readValue(formData, "priority") || "watch") as
+    | "critical"
+    | "watch"
+    | "routine";
+  const notes = readValue(formData, "notes");
+
+  if (!patientFullName || !medicationName || !providerName || !payerName) {
     return {
       status: "error",
       message:
-        "Patient name, phone, medication, provider, and payer are required."
+        "Patient name, medication, provider, and payer name are required for registration."
     };
   }
 
-  if (!hasServiceRoleEnv()) {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { session }
+  } = await supabase.auth.getSession();
+
+  if (!session?.user) {
     return {
-      status: "success",
-      message:
-        "Enrollment captured in preview mode. Add a Supabase service role key to persist live submissions.",
-      reference: `demo-${randomUUID().slice(0, 8)}`
+      status: "error",
+      message: "Please sign in to continue patient registration."
     };
   }
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("organization_id")
+    .eq("id", session.user.id)
+    .maybeSingle();
+
+  if (profileError) {
+    return {
+      status: "error",
+      message: profileError.message ?? "Unable to resolve your profile."
+    };
+  }
+
+  if (!profile?.organization_id) {
+    return {
+      status: "error",
+      message:
+        "Your profile is not mapped to an organization. Contact support before registering patients."
+    };
+  }
+
+  const organizationId = profile.organization_id;
+  const [firstName, ...rest] = patientFullName.split(" ");
+  const lastName = rest.join(" ") || "Patient";
 
   try {
-    const supabase = createServiceSupabaseClient();
-    const db = supabase as unknown as LooseSupabaseClient;
-    const { data: organization } = await db
-      .from("organizations")
-      .select("id")
-      .limit(1)
-      .maybeSingle();
-
-    if (!organization?.id || typeof organization.id !== "string") {
-      return {
-        status: "error",
-        message:
-          "No organization exists yet. Create an organization record before accepting live enrollments."
-      };
-    }
-
-    const [firstName, ...lastNameParts] = patientFullName.split(" ");
-    const lastName = lastNameParts.join(" ") || "Patient";
-
-    const { data: patient, error: patientError } = await db
+    const { data: patient, error: patientError } = await supabase
       .from("patients")
       .insert({
-        organization_id: organization.id,
+        organization_id: organizationId,
         first_name: firstName,
         last_name: lastName,
-        date_of_birth: readValue(formData, "dateOfBirth") || null,
+        phone: readValue(formData, "phone") || null,
         email: readValue(formData, "email") || null,
-        phone,
         preferred_channel: "sms",
+        sex: "unknown",
+        date_of_birth: readValue(formData, "dateOfBirth") || null,
         zip_code: readValue(formData, "zipCode") || null
       })
       .select("id")
       .single();
 
-    if (patientError || !patient || typeof patient.id !== "string") {
+    if (patientError || !patient?.id) {
       return {
         status: "error",
-        message: patientError?.message ?? "Unable to create patient record."
+        message: patientError?.message ?? "Unable to create patient."
       };
     }
 
-    const { data: provider } = await db
+    const providerResult = await supabase
       .from("providers")
       .insert({
-        organization_id: organization.id,
+        organization_id: organizationId,
         full_name: providerName,
-        npi: readValue(formData, "providerNpi") || null,
-        specialty: readValue(formData, "therapyArea") || null,
-        practice_name: readValue(formData, "practiceName") || null
+        specialty: therapyArea || null,
+        practice_name: readValue(formData, "practiceName") || null,
+        npi: readValue(formData, "providerNpi") || null
       })
       .select("id")
       .single();
 
-    if (!provider?.id || typeof provider.id !== "string") {
+    if (!providerResult.data?.id) {
       return {
         status: "error",
         message: "Unable to create provider record."
       };
     }
 
-    const { data: medication } = await db
-      .from("medications")
-      .insert({
-        name: medicationName,
-        therapy_area: readValue(formData, "therapyArea") || null,
-        requires_prior_auth: true
-      })
-      .select("id")
-      .single();
+    const medicationId = await ensureMedication(supabase, medicationName, therapyArea);
 
-    if (!medication?.id || typeof medication.id !== "string") {
-      return {
-        status: "error",
-        message: "Unable to create medication record."
-      };
-    }
-
-    const { data: prescription } = await db
+    const { data: prescription, error: prescriptionError } = await supabase
       .from("prescriptions")
       .insert({
-        organization_id: organization.id,
+        organization_id: organizationId,
         patient_id: patient.id,
-        provider_id: provider.id,
-        medication_id: medication.id,
+        provider_id: providerResult.data.id,
+        medication_id: medicationId,
+        dosage: readValue(formData, "dosage") || "Standard regimen",
         diagnosis: readValue(formData, "diagnosis") || null,
-        dosage: readValue(formData, "dosage") || null,
-        clinical_notes: readValue(formData, "notes") || null
+        clinical_notes: notes || null
       })
       .select("id")
       .single();
 
-    if (!prescription?.id || typeof prescription.id !== "string") {
+    if (prescriptionError || !prescription?.id) {
       return {
         status: "error",
-        message: "Unable to create prescription record."
+        message: prescriptionError?.message ?? "Unable to create prescription."
       };
     }
 
-    const { data: insurance } = await db
+    const { data: insurance, error: insuranceError } = await supabase
       .from("insurance_policies")
       .insert({
-        organization_id: organization.id,
+        organization_id: organizationId,
         patient_id: patient.id,
         payer_name: payerName,
         plan_name: readValue(formData, "planName") || null,
         member_id: readValue(formData, "memberId") || randomUUID().slice(0, 12),
-        verification_notes: "Submitted from public enrollment portal."
+        verification_notes: "Registered via workspace intake."
       })
       .select("id")
       .single();
 
-    if (!insurance?.id || typeof insurance.id !== "string") {
+    if (insuranceError || !insurance?.id) {
       return {
         status: "error",
-        message: "Unable to create insurance policy record."
+        message: insuranceError?.message ?? "Unable to create insurance policy."
       };
     }
 
-    const { data: patientCase, error: caseError } = await db
+    const { data: patientCase, error: caseError } = await supabase
       .from("patient_cases")
       .insert({
-        organization_id: organization.id,
+        organization_id: organizationId,
         patient_id: patient.id,
-        provider_id: provider.id,
+        provider_id: providerResult.data.id,
         prescription_id: prescription.id,
         insurance_policy_id: insurance.id,
+        owner_profile_id: session.user.id,
         status: "intake",
-        priority: "watch",
+        priority,
         next_action: "Run benefits investigation",
-        barrier_summary: readValue(formData, "notes") || null
+        next_action_due_at: new Date(Date.now() + 5 * 60 * 60 * 1000).toISOString(),
+        barrier_summary: notes || null
       })
       .select("id")
       .single();
 
-    if (caseError || !patientCase || typeof patientCase.id !== "string") {
+    if (caseError || !patientCase?.id) {
       return {
         status: "error",
-        message: caseError?.message ?? "Unable to create case record."
+        message: caseError?.message ?? "Unable to create patient case."
       };
     }
 
     return {
       status: "success",
-      message: "Enrollment submitted and routed to the provider workspace.",
+      message: "Patient queued and visible to your workspace immediately.",
       reference: patientCase.id
     };
-  } catch {
+  } catch (error) {
     return {
       status: "error",
-      message: "Unexpected error while submitting enrollment."
+      message:
+        error instanceof Error
+          ? error.message
+          : "Unable to register patient right now."
     };
   }
+}
+
+async function ensureMedication(supabase: ReturnType<typeof createServerSupabaseClient>, name: string, therapyArea?: string) {
+  const normalizedName = name.trim();
+  const { data: existing } = await supabase
+    .from("medications")
+    .select("id")
+    .ilike("name", normalizedName)
+    .maybeSingle();
+
+  if (existing?.id) {
+    return existing.id;
+  }
+
+  const { data: inserted, error } = await supabase
+    .from("medications")
+    .insert({
+      name: normalizedName,
+      therapy_area: therapyArea || null,
+      requires_prior_auth: true
+    })
+    .select("id")
+    .single();
+
+  if (error || !inserted?.id) {
+    throw new Error(error?.message ?? "Unable to create medication.");
+  }
+
+  return inserted.id;
 }

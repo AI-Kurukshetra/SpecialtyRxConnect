@@ -16,8 +16,7 @@ export async function signInAction(
   if (!hasPublicSupabaseEnv()) {
     return {
       status: "error",
-      message:
-        "Supabase authentication is not configured yet. Use the preview workspace until auth is connected."
+      message: "Supabase authentication is not configured yet."
     };
   }
 
